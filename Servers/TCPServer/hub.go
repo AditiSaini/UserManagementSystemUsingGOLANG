@@ -33,5 +33,4 @@ func (h *hub) run() {
 func (h *hub) login(conn net.Conn) {
 	fmt.Println("In login method...")
 	conn.Write([]byte("Ok, logged in!"))
-	conn.Close()
 }
