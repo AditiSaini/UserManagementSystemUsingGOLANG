@@ -16,35 +16,29 @@ func connectToTCPServer() net.Conn {
 	return c
 }
 
-func getResponseFromTCPServer(c net.Conn) string {
-	// for {
-	// reader := bufio.NewReader(os.Stdin)
-	// fmt.Print(">> ")
-	// text, _ := reader.ReadString('\n')
-	text := "Hello "
+func closeTCPConnection(conn net.Conn) {
+	conn.Close()
+}
+
+func getResponseFromTCPServer(command string, c net.Conn) string {
+	//Text is the command to be sent to the TCP server
+	text := command
 	fmt.Fprintf(c, text+"\n")
-	// fmt.Fprintf(c, "Hello...")
 
 	//Receiving message from the TCP server
 	message, _ := bufio.NewReader(c).ReadString('\n')
 	fmt.Print("->: " + message)
-	// if strings.TrimSpace(string(text)) == "STOP" {
-	// 	fmt.Println("TCP client exiting...")
-	// 	return
-	// }
-	c.Close()
+	closeTCPConnection(c)
 	return message
-	// }
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
-	c := connectToTCPServer()
-	message := getResponseFromTCPServer(c)
-
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return
 	}
+	c := connectToTCPServer()
+	message := getResponseFromTCPServer("home page", c)
 	w.Write([]byte("Hello from Home page " + message))
 }
 

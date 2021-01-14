@@ -19,22 +19,4 @@ func main() {
 	log.Println("Starting server on :4000")
 	err := http.ListenAndServe(":4000", mux)
 	log.Fatal(err)
-
-	// CONNECT := ":8081"
-	// c, err := net.Dial("tcp", CONNECT)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// fmt.Println("Connected...")
-	// for {
-	// 	reader := bufio.NewReader(os.Stdin)
-	// 	fmt.Print(">> ")
-	// 	text, _ := reader.ReadString('\n')
-	// 	fmt.Fprintf(c, text+"\n")
-	// 	// fmt.Fprintf(c, "Hello..."+"\n")
-
-	// 	//Receiving message from the TCP server
-	// 	message, _ := bufio.NewReader(c).ReadString('\n')
-	// 	fmt.Print("->: " + message)
-	// }
 }
