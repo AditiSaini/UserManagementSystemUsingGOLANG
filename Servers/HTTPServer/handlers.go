@@ -1,16 +1,51 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"net"
 	"net/http"
 )
 
+func connectToTCPServer() net.Conn {
+	CONNECT := ":8081"
+	c, err := net.Dial("tcp", CONNECT)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return c
+}
+
+func getResponseFromTCPServer(c net.Conn) string {
+	// for {
+	// reader := bufio.NewReader(os.Stdin)
+	// fmt.Print(">> ")
+	// text, _ := reader.ReadString('\n')
+	text := "Hello "
+	fmt.Fprintf(c, text+"\n")
+	// fmt.Fprintf(c, "Hello...")
+
+	//Receiving message from the TCP server
+	message, _ := bufio.NewReader(c).ReadString('\n')
+	fmt.Print("->: " + message)
+	// if strings.TrimSpace(string(text)) == "STOP" {
+	// 	fmt.Println("TCP client exiting...")
+	// 	return
+	// }
+	c.Close()
+	return message
+	// }
+}
+
 func home(w http.ResponseWriter, r *http.Request) {
+	c := connectToTCPServer()
+	message := getResponseFromTCPServer(c)
+
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return
 	}
-	w.Write([]byte("Hello from Home page"))
+	w.Write([]byte("Hello from Home page " + message))
 }
 
 //Login handler function
@@ -30,8 +65,8 @@ func logoutUser(w http.ResponseWriter, r *http.Request) {
 
 //Show profile handler function
 func showProfile(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Displaying profile...")
-	// w.Write([]byte("Displaying profile..."))
+	// fmt.Fprintf(w, "Displaying profile...")
+	w.Write([]byte("Displaying profile..."))
 }
 
 //Modify profile handler function
