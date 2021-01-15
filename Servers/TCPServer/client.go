@@ -5,6 +5,8 @@ import (
 	"bytes"
 	"fmt"
 	"net"
+
+	Structure "./Structure"
 )
 
 var (
@@ -39,17 +41,19 @@ func (c *client) handle(message []byte) {
 	cmd := bytes.ToUpper(bytes.TrimSpace(bytes.Split(message, []byte(" "))[0]))
 	//Step 2- Extract the arguments of the command
 	args := bytes.TrimSpace(bytes.TrimPrefix(message, cmd))
+	//Converted into the command data structure
+	command := Structure.NewCmd(string(cmd), string(args), c.conn)
 
 	//Routing the command to the right handler function
 	switch string(cmd) {
 	case "LOGIN":
-		c.login(cmd, args)
+		c.login(command)
 	default:
 		c.conn.Write([]byte("Send a recognizable command to the TCP Server"))
 	}
 }
 
-func (c *client) login(cmd []byte, args []byte) {
+func (c *client) login(command *Structure.Command) {
 	c.conn.Write([]byte("Ok, logged in!"))
 	c.conn.Close()
 }

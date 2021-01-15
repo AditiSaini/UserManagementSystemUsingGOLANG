@@ -2,23 +2,19 @@ package structure
 
 import "net"
 
-type ID int
+func NewCmd(id string, body string, conn net.Conn) *Command {
+	return &Command{
+		Id:   id,
+		Body: body,
+		Conn: conn,
+	}
+}
 
-const (
-	REG ID = iota
-	LOGIN
-	LOGOUT
-	UPLOAD
-	UPDATE
-	GET
-)
-
-type command struct {
+type Command struct {
 	//Identification of the commands
-	id []byte
-	//Sender of the commands identified by a username
-	sender string
+	Id string
 	//Body of the command sent by the sender
-	body []byte
-	conn net.Conn
+	Body string
+	//Connection being used to connect to the server
+	Conn net.Conn
 }
