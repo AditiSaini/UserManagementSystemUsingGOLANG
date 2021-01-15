@@ -44,7 +44,7 @@ func loginUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println("Password can't be hashed")
 	}
-	command := "1 #" + strconv.Itoa(len(username)) + "<" + username + ">#" + strconv.Itoa(len(hashedPass)) + "<" + hashedPass + ">"
+	command := "LOGIN #" + strconv.Itoa(len(username)) + "<" + username + ">#" + strconv.Itoa(len(hashedPass)) + "<" + hashedPass + ">"
 	c := Helper.ConnectToTCPServer()
 	message := Helper.GetResponseFromTCPServer(command, c)
 

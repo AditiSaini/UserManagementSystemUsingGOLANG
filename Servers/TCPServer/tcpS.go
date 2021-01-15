@@ -12,9 +12,6 @@ func main() {
 		log.Printf("%v", err)
 	}
 
-	hub := newHub()
-	go hub.run()
-
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
@@ -22,11 +19,8 @@ func main() {
 		} else {
 			fmt.Println("Connection Accepted...")
 		}
-
 		c := newClient(
 			conn,
-			hub.commands,
-			"Adris",
 		)
 		go c.read()
 	}

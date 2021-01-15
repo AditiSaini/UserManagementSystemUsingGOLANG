@@ -12,16 +12,12 @@ var (
 )
 
 type client struct {
-	conn     net.Conn
-	outbound chan<- command
-	username string
+	conn net.Conn
 }
 
-func newClient(conn net.Conn, o chan<- command, username string) *client {
+func newClient(conn net.Conn) *client {
 	return &client{
-		conn:     conn,
-		outbound: o,
-		username: username,
+		conn: conn,
 	}
 }
 
@@ -33,28 +29,27 @@ func (c *client) read() error {
 		}
 		c.handle(msg)
 	}
-	return nil
 }
 
 func (c *client) handle(message []byte) {
-	fmt.Println("Handling message...")
+	fmt.Println("Handling command: " + string(message))
+
+	//Processing commands sent by the HTTP Server
+	//Step 1- Get the command
 	cmd := bytes.ToUpper(bytes.TrimSpace(bytes.Split(message, []byte(" "))[0]))
+	//Step 2- Extract the arguments of the command
 	args := bytes.TrimSpace(bytes.TrimPrefix(message, cmd))
 
+	//Routing the command to the right handler function
 	switch string(cmd) {
 	case "LOGIN":
 		c.login(cmd, args)
 	default:
-		fmt.Println("In default logic...")
-		c.login(cmd, args)
+		c.conn.Write([]byte("Send a recognizable command to the TCP Server"))
 	}
 }
 
 func (c *client) login(cmd []byte, args []byte) {
-	c.outbound <- command{
-		conn:   c.conn,
-		id:     cmd,
-		sender: c.username,
-		body:   args,
-	}
+	c.conn.Write([]byte("Ok, logged in!"))
+	c.conn.Close()
 }
