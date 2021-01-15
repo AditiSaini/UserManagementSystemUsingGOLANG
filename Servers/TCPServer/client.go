@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 
+	Helper "./Helper"
 	Structure "./Structure"
 )
 
@@ -54,6 +55,9 @@ func (c *client) handle(message []byte) {
 }
 
 func (c *client) login(command *Structure.Command) {
+	//Processing body to get the right arguments
+	Helper.ExtractingArgumentsFromCommands(command.Body)
+	//Connecting to the HTTP Server to send the response
 	c.conn.Write([]byte("Ok, logged in!"))
 	c.conn.Close()
 }
