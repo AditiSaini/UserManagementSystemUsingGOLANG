@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	Helper "./Helper"
 	Structure "./Structure"
@@ -44,11 +43,11 @@ func loginUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println("Password can't be hashed")
 	}
-	command := "LOGIN #" + strconv.Itoa(len(username)) + "<" + username + ">#" + strconv.Itoa(len(hashedPass)) + "<" + hashedPass + ">"
+	command := "LOGIN username " + username + "|password " + hashedPass
 	c := Helper.ConnectToTCPServer()
 	message := Helper.GetResponseFromTCPServer(command, c)
 
-	w.Write([]byte("Logging in user..." + message))
+	w.Write([]byte("LOGIN" + message))
 	w.Write([]byte("Received a POST request\n@" + username + " hashed password: " + hashedPass))
 }
 

@@ -56,8 +56,15 @@ func (c *client) handle(message []byte) {
 
 func (c *client) login(command *Structure.Command) {
 	//Processing body to get the right arguments
-	Helper.ExtractingArgumentsFromCommands(command.Body)
-	//Connecting to the HTTP Server to send the response
-	c.conn.Write([]byte("Ok, logged in!"))
-	c.conn.Close()
+	args := Helper.ExtractingArgumentsFromCommands("LOGIN", command.Body)
+	//Checking the validity of the credentials
+	check := Helper.ValidateLogin(args["username"], args["password"])
+	//If user is authenticated, get a bearer token and return it to the HTTP Server
+	if check == true {
+		token := Helper.CreateToken(args["username"])
+		Helper.SendToHTTPServer(c.conn, "Ok, logged in with token: "+token)
+	} else {
+		token := "Invalid Credentials"
+		Helper.SendToHTTPServer(c.conn, "Ok, logged in with token: "+token)
+	}
 }
