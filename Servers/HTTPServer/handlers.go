@@ -60,9 +60,30 @@ func loginUser(w http.ResponseWriter, r *http.Request) {
 
 //Logout handler function
 func logoutUser(w http.ResponseWriter, r *http.Request) {
+	m := make(map[string]string)
 	c := Helper.ConnectToTCPServer()
-	message := Helper.GetResponseFromTCPServer("logout handler method", c)
-	w.Write([]byte("Logging out user..." + message))
+	tokenAuth, err := Helper.ExtractTokenMetadata(r)
+	if err != nil {
+		fmt.Println(err)
+		m["profile"] = "Unauthorised Access"
+		jsonString, _ := json.Marshal(m)
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte(jsonString))
+		return
+	}
+	b, err := json.Marshal(tokenAuth)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	command := "LOGOUT tokenAuth " + string(b)
+	message := Helper.GetResponseFromTCPServer(command, c)
+	m["command"] = "LOGOUT"
+	m["status"] = message
+	jsonString, _ := json.Marshal(m)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write([]byte(jsonString))
 }
 
 //Show profile handler function
@@ -75,6 +96,7 @@ func showProfile(w http.ResponseWriter, r *http.Request) {
 		m["profile"] = "Unauthorised Access"
 		jsonString, _ := json.Marshal(m)
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusUnauthorized)
 		w.Write([]byte(jsonString))
 		return
 	}

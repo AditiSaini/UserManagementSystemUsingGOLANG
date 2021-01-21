@@ -52,9 +52,22 @@ func (c *client) handle(message []byte) {
 		c.login(command)
 	case "SHOW_PROFILE":
 		c.showProfile(command)
+	case "LOGOUT":
+		c.logout(command)
 	default:
 		Helper.SendToHTTPServer(c.conn, "Send a recognizable command to the TCP Server")
 	}
+}
+
+func (c *client) logout(command *Structure.Command) {
+	args := Helper.ExtractingArgumentsFromCommands("LOGIN", command.Body)
+	tokenAuth := args["tokenAuth"]
+	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
+	deleted, delErr := Helper.DeleteAuth(tokenAuthMap["AccessUUID"])
+	if delErr != nil || deleted == 0 { //if any goes wrong
+		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
+	}
+	Helper.SendToHTTPServer(c.conn, "Logged out!")
 }
 
 func (c *client) showProfile(command *Structure.Command) {
@@ -66,6 +79,7 @@ func (c *client) showProfile(command *Structure.Command) {
 	if err != nil {
 		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
 	}
+	//Function to display the profile of the user from the database
 	Helper.SendToHTTPServer(c.conn, "Welcome "+username)
 }
 

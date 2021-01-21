@@ -52,3 +52,12 @@ func FetchAuth(authD map[string]string) (string, error) {
 	}
 	return username, nil
 }
+
+//The function deletes the record in redis that corresponds with the uuid passed as a parameter
+func DeleteAuth(givenUUID string) (int64, error) {
+	deleted, err := client.Del(client.Context(), givenUUID).Result()
+	if err != nil {
+		return 0, err
+	}
+	return deleted, nil
+}
