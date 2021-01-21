@@ -29,17 +29,12 @@ func init() {
 //Adds the user's token into the redis key value pair
 func CreateAuth(username string, td *Structure.TokenDetails) error {
 	at := time.Unix(td.AtExpires, 0) //converting Unix to UTC(to Time object)
-	rt := time.Unix(td.RtExpires, 0)
 	now := time.Now()
 	context := client.Context()
 
 	errAccess := client.Set(context, td.AccessUuid, username, at.Sub(now)).Err()
 	if errAccess != nil {
 		return errAccess
-	}
-	errRefresh := client.Set(context, td.RefreshUuid, username, rt.Sub(now)).Err()
-	if errRefresh != nil {
-		return errRefresh
 	}
 	return nil
 }

@@ -51,7 +51,6 @@ func loginUser(w http.ResponseWriter, r *http.Request) {
 	details, _ := Helper.ConvertStringToMap(message)
 	m["command"] = "LOGIN"
 	m["access_token"] = details["access_token"]
-	m["refresh_token"] = details["refresh_token"]
 	jsonString, _ := json.Marshal(m)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")

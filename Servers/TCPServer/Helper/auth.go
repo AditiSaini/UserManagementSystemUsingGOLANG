@@ -28,7 +28,6 @@ func CreateToken(username string) (*Structure.TokenDetails, error) {
 	td.AtExpires = time.Now().Add(time.Minute * 30).Unix()
 	td.AccessUuid = uuid.NewV4().String()
 	td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
-	td.RefreshUuid = uuid.NewV4().String()
 
 	//Craeting access token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -38,14 +37,5 @@ func CreateToken(username string) (*Structure.TokenDetails, error) {
 		"exp":         td.AtExpires,
 	})
 	td.AccessToken, _ = token.SignedString([]byte("secret"))
-
-	//Creating refresh token
-	refresh_token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"refresh_uuid": td.RefreshUuid,
-		"username":     username,
-		"exp":          td.RtExpires,
-	})
-	td.RefreshToken, _ = refresh_token.SignedString([]byte("secret"))
-
 	return td, nil
 }

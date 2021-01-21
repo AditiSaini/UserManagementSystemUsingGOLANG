@@ -100,8 +100,7 @@ func (c *client) login(command *Structure.Command) {
 		}
 		//Data prepared for sending to HTTP server
 		tokens := map[string]string{
-			"access_token":  token.AccessToken,
-			"refresh_token": token.RefreshToken,
+			"access_token": token.AccessToken,
 		}
 		out, _ := json.Marshal(tokens)
 		//Data sent to HTTP server
