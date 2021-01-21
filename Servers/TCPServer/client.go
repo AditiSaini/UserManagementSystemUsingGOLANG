@@ -62,9 +62,9 @@ func (c *client) login(command *Structure.Command) {
 	//If user is authenticated, get a bearer token and return it to the HTTP Server
 	if check == true {
 		token := Helper.CreateToken(args["username"])
-		Helper.SendToHTTPServer(c.conn, "Ok, logged in with token: "+token)
+		Helper.SendToHTTPServer(c.conn, token)
 	} else {
 		token := "Invalid Credentials"
-		Helper.SendToHTTPServer(c.conn, "Ok, logged in with token: "+token)
+		Helper.SendToHTTPServer(c.conn, token)
 	}
 }

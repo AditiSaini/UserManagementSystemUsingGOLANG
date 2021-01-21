@@ -11,7 +11,6 @@ import (
 )
 
 func ValidateLogin(username string, password string) bool {
-	fmt.Println(username, password)
 	err := bcrypt.CompareHashAndPassword([]byte(password), []byte("12345"))
 	if err != nil {
 		log.Println(err)
@@ -24,9 +23,10 @@ func ValidateLogin(username string, password string) bool {
 }
 
 func CreateToken(username string) string {
+	//Token session for 15 min
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"username": username,
-		"exp":      time.Now().Add(time.Minute * 5).Unix(),
+		"exp":      time.Now().Add(time.Minute * 15).Unix(),
 	})
 	jwtToken, _ := token.SignedString([]byte("secret"))
 	return jwtToken

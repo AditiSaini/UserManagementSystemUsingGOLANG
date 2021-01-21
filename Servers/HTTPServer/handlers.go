@@ -24,6 +24,8 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 //Login handler function
 func loginUser(w http.ResponseWriter, r *http.Request) {
+	m := make(map[string]string)
+
 	if r.Method != http.MethodPost {
 		w.Header().Set("Allow", http.MethodPost)
 		http.Error(w, "Method Not Allowed", 405)
@@ -47,8 +49,12 @@ func loginUser(w http.ResponseWriter, r *http.Request) {
 	c := Helper.ConnectToTCPServer()
 	message := Helper.GetResponseFromTCPServer(command, c)
 
-	w.Write([]byte("LOGIN" + message))
-	w.Write([]byte("Received a POST request\n@" + username + " hashed password: " + hashedPass))
+	m["command"] = "LOGIN"
+	m["token"] = message
+	jsonString, _ := json.Marshal(m)
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write([]byte(jsonString))
 }
 
 //Logout handler function

@@ -35,7 +35,6 @@ func GetResponseFromTCPServer(command string, c net.Conn) string {
 
 	//Receiving message from the TCP server
 	message, _ := bufio.NewReader(c).ReadString('\n')
-	fmt.Print("->: " + message)
 	CloseTCPConnection(c)
 	return message
 }
