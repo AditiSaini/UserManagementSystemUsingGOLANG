@@ -66,7 +66,6 @@ func (c *client) showProfile(command *Structure.Command) {
 	if err != nil {
 		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
 	}
-
 	Helper.SendToHTTPServer(c.conn, "Welcome "+username)
 }
 

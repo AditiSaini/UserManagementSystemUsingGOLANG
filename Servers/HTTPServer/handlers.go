@@ -76,6 +76,7 @@ func showProfile(w http.ResponseWriter, r *http.Request) {
 		jsonString, _ := json.Marshal(m)
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.Write([]byte(jsonString))
+		return
 	}
 	b, err := json.Marshal(tokenAuth)
 	if err != nil {
