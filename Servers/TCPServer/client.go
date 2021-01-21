@@ -50,9 +50,24 @@ func (c *client) handle(message []byte) {
 	switch string(cmd) {
 	case "LOGIN":
 		c.login(command)
+	case "SHOW_PROFILE":
+		c.showProfile(command)
 	default:
 		Helper.SendToHTTPServer(c.conn, "Send a recognizable command to the TCP Server")
 	}
+}
+
+func (c *client) showProfile(command *Structure.Command) {
+	args := Helper.ExtractingArgumentsFromCommands("LOGIN", command.Body)
+	tokenAuth := args["tokenAuth"]
+	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
+
+	username, err := Helper.FetchAuth(tokenAuthMap)
+	if err != nil {
+		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
+	}
+
+	Helper.SendToHTTPServer(c.conn, "Welcome "+username)
 }
 
 func (c *client) login(command *Structure.Command) {

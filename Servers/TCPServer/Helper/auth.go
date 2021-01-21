@@ -2,7 +2,6 @@ package helper
 
 import (
 	"log"
-	"net/http"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -26,7 +25,7 @@ func ValidateLogin(username string, password string) bool {
 
 func CreateToken(username string) (*Structure.TokenDetails, error) {
 	td := &Structure.TokenDetails{}
-	td.AtExpires = time.Now().Add(time.Minute * 15).Unix()
+	td.AtExpires = time.Now().Add(time.Minute * 30).Unix()
 	td.AccessUuid = uuid.NewV4().String()
 	td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
 	td.RefreshUuid = uuid.NewV4().String()
@@ -49,16 +48,4 @@ func CreateToken(username string) (*Structure.TokenDetails, error) {
 	td.RefreshToken, _ = refresh_token.SignedString([]byte("secret"))
 
 	return td, nil
-}
-
-//Check whether the token has expired
-func TokenValid(r *http.Request) error {
-	token, err := VerifyToken(r)
-	if err != nil {
-		return err
-	}
-	if _, ok := token.Claims.(jwt.Claims); !ok && !token.Valid {
-		return err
-	}
-	return nil
 }

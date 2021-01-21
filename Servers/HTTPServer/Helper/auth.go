@@ -57,3 +57,15 @@ func ExtractTokenMetadata(r *http.Request) (*Structure.AccessDetails, error) {
 	}
 	return nil, err
 }
+
+//Check whether the token has expired
+func TokenValid(r *http.Request) error {
+	token, err := VerifyToken(r)
+	if err != nil {
+		return err
+	}
+	if _, ok := token.Claims.(jwt.Claims); !ok && !token.Valid {
+		return err
+	}
+	return nil
+}

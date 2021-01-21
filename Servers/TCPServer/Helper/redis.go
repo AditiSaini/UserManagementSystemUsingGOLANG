@@ -2,7 +2,6 @@ package helper
 
 import (
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -46,11 +45,10 @@ func CreateAuth(username string, td *Structure.TokenDetails) error {
 }
 
 //Fetches auth information from redis (if not found, token may have been expired)
-func FetchAuth(authD *Structure.AccessDetails) (uint64, error) {
-	userid, err := client.Get(client.Context(), authD.AccessUUID).Result()
+func FetchAuth(authD map[string]string) (string, error) {
+	username, err := client.Get(client.Context(), authD["AccessUUID"]).Result()
 	if err != nil {
-		return 0, err
+		return "", err
 	}
-	userID, _ := strconv.ParseUint(userid, 10, 64)
-	return userID, nil
+	return username, nil
 }
