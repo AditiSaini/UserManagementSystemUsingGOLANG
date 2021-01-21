@@ -15,7 +15,7 @@ func main() {
 	router.HandleFunc("/", home)
 	router.HandleFunc("/login", loginUser)
 	router.HandleFunc("/logout", logoutUser).Methods("GET")
-	router.HandleFunc("/profile", showProfile).Methods("POST")
+	router.HandleFunc("/profile", showProfile).Methods("GET")
 	router.HandleFunc("/profile/update", updateProfile).Methods("POST")
 	router.HandleFunc("/uploadProfilePicture", uploadPicture).Methods("POST")
 

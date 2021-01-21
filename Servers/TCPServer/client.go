@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"net"
 
@@ -50,7 +51,7 @@ func (c *client) handle(message []byte) {
 	case "LOGIN":
 		c.login(command)
 	default:
-		c.conn.Write([]byte("Send a recognizable command to the TCP Server"))
+		Helper.SendToHTTPServer(c.conn, "Send a recognizable command to the TCP Server")
 	}
 }
 
@@ -61,8 +62,22 @@ func (c *client) login(command *Structure.Command) {
 	check := Helper.ValidateLogin(args["username"], args["password"])
 	//If user is authenticated, get a bearer token and return it to the HTTP Server
 	if check == true {
-		token := Helper.CreateToken(args["username"])
-		Helper.SendToHTTPServer(c.conn, token)
+		//Token is created for auth
+		token, _ := Helper.CreateToken(args["username"])
+		//User is saved in redis
+		saveErr := Helper.CreateAuth(args["username"], token)
+		if saveErr != nil {
+			token := "Invalid Credentials"
+			Helper.SendToHTTPServer(c.conn, token)
+		}
+		//Data prepared for sending to HTTP server
+		tokens := map[string]string{
+			"access_token":  token.AccessToken,
+			"refresh_token": token.RefreshToken,
+		}
+		out, _ := json.Marshal(tokens)
+		//Data sent to HTTP server
+		Helper.SendToHTTPServer(c.conn, string(out))
 	} else {
 		token := "Invalid Credentials"
 		Helper.SendToHTTPServer(c.conn, token)

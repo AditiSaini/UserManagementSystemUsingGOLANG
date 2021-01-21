@@ -19,7 +19,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 	c := Helper.ConnectToTCPServer()
 	message := Helper.GetResponseFromTCPServer("home page", c)
 	//Sending information to the client
-	w.Write([]byte("Hello from Home page " + message))
+	w.Write([]byte("Hello from Home page!!!\n" + message))
 }
 
 //Login handler function
@@ -48,9 +48,10 @@ func loginUser(w http.ResponseWriter, r *http.Request) {
 	command := "LOGIN username " + username + "|password " + hashedPass
 	c := Helper.ConnectToTCPServer()
 	message := Helper.GetResponseFromTCPServer(command, c)
-
+	details, _ := Helper.ConvertStringToMap(message)
 	m["command"] = "LOGIN"
-	m["token"] = message
+	m["access_token"] = details["access_token"]
+	m["refresh_token"] = details["refresh_token"]
 	jsonString, _ := json.Marshal(m)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -66,9 +67,24 @@ func logoutUser(w http.ResponseWriter, r *http.Request) {
 
 //Show profile handler function
 func showProfile(w http.ResponseWriter, r *http.Request) {
+	m := make(map[string]string)
 	c := Helper.ConnectToTCPServer()
-	message := Helper.GetResponseFromTCPServer("show profile handler method", c)
-	w.Write([]byte("Displaying profile..." + message))
+	tokenAuth, err := Helper.ExtractTokenMetadata(r)
+	if err != nil {
+		fmt.Println(err)
+		m["profile"] = "Unauthorised Access"
+		jsonString, _ := json.Marshal(m)
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.Write([]byte(jsonString))
+	}
+	b, err := json.Marshal(tokenAuth)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	command := "SHOW_PROFILE tokenAuth " + string(b)
+	message := Helper.GetResponseFromTCPServer(command, c)
+	w.Write([]byte("Displaying profile...\n" + message))
 }
 
 //Modify profile handler function
