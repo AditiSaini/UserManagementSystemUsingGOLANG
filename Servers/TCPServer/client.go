@@ -81,7 +81,10 @@ func (c *client) showProfile(command *Structure.Command) {
 	}
 	//Function to display the profile of the user from the database
 	profile := Helper.Show(username)
-	Helper.SendToHTTPServer(c.conn, "Welcome "+profile.Username)
+	profileMap := Helper.ConvertStructToMap(profile)
+
+	out, _ := json.Marshal(profileMap)
+	Helper.SendToHTTPServer(c.conn, string(out))
 }
 
 func (c *client) login(command *Structure.Command) {

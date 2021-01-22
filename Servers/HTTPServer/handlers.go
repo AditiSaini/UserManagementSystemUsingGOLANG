@@ -101,7 +101,10 @@ func showProfile(w http.ResponseWriter, r *http.Request) {
 	}
 	command := "SHOW_PROFILE tokenAuth " + string(b)
 	message := Helper.GetResponseFromTCPServer(command, c)
-	w.Write([]byte(message))
+	details, _ := Helper.ConvertStringToMap(message)
+	jsonString, _ := json.Marshal(details)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonString)
 }
 
 //Modify profile handler function
