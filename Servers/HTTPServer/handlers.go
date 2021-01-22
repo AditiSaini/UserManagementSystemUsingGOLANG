@@ -1,44 +1,24 @@
 package main
 
 import (
-	"bufio"
+	"encoding/json"
 	"fmt"
-	"net"
 	"net/http"
+
+	Helper "./Helper"
+	Structure "./Structure"
 )
 
-func connectToTCPServer() net.Conn {
-	CONNECT := ":8081"
-	c, err := net.Dial("tcp", CONNECT)
-	if err != nil {
-		fmt.Println(err)
-	}
-	return c
-}
-
-func closeTCPConnection(conn net.Conn) {
-	conn.Close()
-}
-
-func getResponseFromTCPServer(command string, c net.Conn) string {
-	//Text is the command to be sent to the TCP server
-	text := command
-	fmt.Fprintf(c, text+"\n")
-
-	//Receiving message from the TCP server
-	message, _ := bufio.NewReader(c).ReadString('\n')
-	fmt.Print("->: " + message)
-	closeTCPConnection(c)
-	return message
-}
-
+//Routing handler functions
 func home(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return
 	}
-	c := connectToTCPServer()
-	message := getResponseFromTCPServer("home page", c)
+	//Connecting to the tcp server
+	c := Helper.ConnectToTCPServer()
+	message := Helper.GetResponseFromTCPServer("home page", c)
+	//Sending information to the client
 	w.Write([]byte("Hello from Home page " + message))
 }
 
@@ -49,18 +29,40 @@ func loginUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method Not Allowed", 405)
 		return
 	}
-	w.Write([]byte("Logging in user..."))
+	var user Structure.User
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&user)
+	if err != nil {
+		panic(err)
+	}
+	username := user.Username
+	password := user.Password
+
+	//The password is hashed
+	hashedPass, err := Helper.HashPassword(password)
+	if err != nil {
+		fmt.Println("Password can't be hashed")
+	}
+	command := "LOGIN username " + username + "|password " + hashedPass
+	c := Helper.ConnectToTCPServer()
+	message := Helper.GetResponseFromTCPServer(command, c)
+
+	w.Write([]byte("LOGIN" + message))
+	w.Write([]byte("Received a POST request\n@" + username + " hashed password: " + hashedPass))
 }
 
 //Logout handler function
 func logoutUser(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Logging out user..."))
+	c := Helper.ConnectToTCPServer()
+	message := Helper.GetResponseFromTCPServer("logout handler method", c)
+	w.Write([]byte("Logging out user..." + message))
 }
 
 //Show profile handler function
 func showProfile(w http.ResponseWriter, r *http.Request) {
-	// fmt.Fprintf(w, "Displaying profile...")
-	w.Write([]byte("Displaying profile..."))
+	c := Helper.ConnectToTCPServer()
+	message := Helper.GetResponseFromTCPServer("show profile handler method", c)
+	w.Write([]byte("Displaying profile..." + message))
 }
 
 //Modify profile handler function
@@ -78,7 +80,9 @@ func updateProfile(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method Not Allowed", 405)
 		return
 	}
-	w.Write([]byte("Modify user profile..."))
+	c := Helper.ConnectToTCPServer()
+	message := Helper.GetResponseFromTCPServer("update profile handler method", c)
+	w.Write([]byte("Modify user profile..." + message))
 }
 
 //Upload profile picture
@@ -88,5 +92,7 @@ func uploadPicture(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method Not Allowed", 405)
 		return
 	}
-	w.Write([]byte("Uploading profile picture..."))
+	c := Helper.ConnectToTCPServer()
+	message := Helper.GetResponseFromTCPServer("upload profile picture handler method", c)
+	w.Write([]byte("Uploading profile picture..." + message))
 }

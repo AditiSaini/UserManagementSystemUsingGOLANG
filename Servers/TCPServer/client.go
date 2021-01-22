@@ -5,6 +5,9 @@ import (
 	"bytes"
 	"fmt"
 	"net"
+
+	Helper "./Helper"
+	Structure "./Structure"
 )
 
 var (
@@ -12,16 +15,12 @@ var (
 )
 
 type client struct {
-	conn     net.Conn
-	outbound chan<- command
-	username string
+	conn net.Conn
 }
 
-func newClient(conn net.Conn, o chan<- command, username string) *client {
+func newClient(conn net.Conn) *client {
 	return &client{
-		conn:     conn,
-		outbound: o,
-		username: username,
+		conn: conn,
 	}
 }
 
@@ -33,28 +32,39 @@ func (c *client) read() error {
 		}
 		c.handle(msg)
 	}
-	return nil
 }
 
 func (c *client) handle(message []byte) {
-	fmt.Println("Handling message...")
-	cmd := bytes.ToUpper(bytes.TrimSpace(bytes.Split(message, []byte(" "))[0]))
-	args := bytes.TrimSpace(bytes.TrimPrefix(message, cmd))
+	fmt.Println("Handling command: " + string(message))
 
+	//Processing commands sent by the HTTP Server
+	//Step 1- Get the command
+	cmd := bytes.ToUpper(bytes.TrimSpace(bytes.Split(message, []byte(" "))[0]))
+	//Step 2- Extract the arguments of the command
+	args := bytes.TrimSpace(bytes.TrimPrefix(message, cmd))
+	//Converted into the command data structure
+	command := Structure.NewCmd(string(cmd), string(args), c.conn)
+
+	//Routing the command to the right handler function
 	switch string(cmd) {
 	case "LOGIN":
-		c.login(cmd, args)
+		c.login(command)
 	default:
-		fmt.Println("In default logic...")
-		c.login(cmd, args)
+		c.conn.Write([]byte("Send a recognizable command to the TCP Server"))
 	}
 }
 
-func (c *client) login(cmd []byte, args []byte) {
-	c.outbound <- command{
-		conn:   c.conn,
-		id:     cmd,
-		sender: c.username,
-		body:   args,
+func (c *client) login(command *Structure.Command) {
+	//Processing body to get the right arguments
+	args := Helper.ExtractingArgumentsFromCommands("LOGIN", command.Body)
+	//Checking the validity of the credentials
+	check := Helper.ValidateLogin(args["username"], args["password"])
+	//If user is authenticated, get a bearer token and return it to the HTTP Server
+	if check == true {
+		token := Helper.CreateToken(args["username"])
+		Helper.SendToHTTPServer(c.conn, "Ok, logged in with token: "+token)
+	} else {
+		token := "Invalid Credentials"
+		Helper.SendToHTTPServer(c.conn, "Ok, logged in with token: "+token)
 	}
 }

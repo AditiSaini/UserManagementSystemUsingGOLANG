@@ -1,4 +1,4 @@
-package main
+package structure
 
 type profile struct {
 	username       string
