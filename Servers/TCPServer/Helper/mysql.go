@@ -2,6 +2,7 @@ package helper
 
 import (
 	"database/sql"
+	"log"
 
 	_ "github.com/go-sql-driver/mysql"
 
@@ -51,4 +52,15 @@ func Show(username string) Structure.Profile {
 	}
 	defer db.Close()
 	return profile
+}
+
+func Update(username string, name string) {
+	db := dbConn()
+	insForm, err := db.Prepare("UPDATE Profile SET Name=? WHERE Nickname=?")
+	if err != nil {
+		panic(err.Error())
+	}
+	insForm.Exec(name, username)
+	log.Println("UPDATE: Name: " + name + " of User: " + username)
+	defer db.Close()
 }
