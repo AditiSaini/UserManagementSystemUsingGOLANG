@@ -47,7 +47,12 @@ func loginUser(w http.ResponseWriter, r *http.Request) {
 	m["command"] = "LOGIN"
 	m["access_token"] = details["access_token"]
 	jsonString, _ := json.Marshal(m)
-
+	if details["access_token"] == "Invalid Credentials" {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte(jsonString))
+		return
+	}
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.Write([]byte(jsonString))
 }
