@@ -151,18 +151,7 @@ func updateProfile(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(jsonString))
 }
 
-//Upload profile picture
-func uploadPicture(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.Header().Set("Allow", http.MethodPost)
-		http.Error(w, "Method Not Allowed", 405)
-		return
-	}
-	c := Helper.ConnectToTCPServer()
-	message := Helper.GetResponseFromTCPServer("upload profile picture handler method", c)
-	w.Write([]byte("Uploading profile picture..." + message))
-}
-
+//Change the user password
 func changePassword(w http.ResponseWriter, r *http.Request) {
 	m := make(map[string]string)
 	c := Helper.ConnectToTCPServer()
@@ -197,4 +186,16 @@ func changePassword(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.Write([]byte(jsonString))
+}
+
+//Upload profile picture
+func uploadPicture(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.Header().Set("Allow", http.MethodPost)
+		http.Error(w, "Method Not Allowed", 405)
+		return
+	}
+	c := Helper.ConnectToTCPServer()
+	message := Helper.GetResponseFromTCPServer("upload profile picture handler method", c)
+	w.Write([]byte("Uploading profile picture..." + message))
 }
