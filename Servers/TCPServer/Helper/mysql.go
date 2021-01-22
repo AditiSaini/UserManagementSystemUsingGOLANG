@@ -54,13 +54,14 @@ func Show(username string) Structure.Profile {
 	return profile
 }
 
-func Update(username string, name string) {
+func Update(username string, name string) (bool, error) {
 	db := dbConn()
 	insForm, err := db.Prepare("UPDATE Profile SET Name=? WHERE Nickname=?")
 	if err != nil {
-		panic(err.Error())
+		return false, err
 	}
 	insForm.Exec(name, username)
 	log.Println("UPDATE: Name: " + name + " of User: " + username)
 	defer db.Close()
+	return true, nil
 }

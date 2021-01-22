@@ -54,9 +54,27 @@ func (c *client) handle(message []byte) {
 		c.showProfile(command)
 	case "LOGOUT":
 		c.logout(command)
+	case "UPDATE_PROFILE":
+		c.updateProfile(command)
 	default:
 		Helper.SendToHTTPServer(c.conn, "Send a recognizable command to the TCP Server")
 	}
+}
+
+func (c *client) updateProfile(command *Structure.Command) {
+	args := Helper.ExtractingArgumentsFromCommands("UPDATE_PROFILE", command.Body)
+	tokenAuth := args["tokenAuth"]
+	name := args["name"]
+	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
+	username, err := Helper.FetchAuth(tokenAuthMap)
+	if err != nil {
+		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
+	}
+	updated, err := Helper.Update(username, name)
+	if !updated {
+		Helper.SendToHTTPServer(c.conn, "false")
+	}
+	Helper.SendToHTTPServer(c.conn, "true")
 }
 
 func (c *client) logout(command *Structure.Command) {
@@ -64,7 +82,7 @@ func (c *client) logout(command *Structure.Command) {
 	tokenAuth := args["tokenAuth"]
 	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
 	deleted, delErr := Helper.DeleteAuth(tokenAuthMap["AccessUUID"])
-	if delErr != nil || deleted == 0 { //if any goes wrong
+	if delErr != nil || deleted == 0 { //if anything goes wrong
 		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
 	}
 	Helper.SendToHTTPServer(c.conn, "Logged out!")
