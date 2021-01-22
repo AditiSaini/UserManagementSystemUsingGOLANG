@@ -43,8 +43,10 @@ func (c *client) handle(message []byte) {
 	cmd := bytes.ToUpper(bytes.TrimSpace(bytes.Split(message, []byte(" "))[0]))
 	//Step 2- Extract the arguments of the command
 	args := bytes.TrimSpace(bytes.TrimPrefix(message, cmd))
+	//Step 3- Processing the arguments of the command
+	processArgs := Helper.ExtractingArgumentsFromCommands(string(cmd), string(args))
 	//Converted into the command data structure
-	command := Structure.NewCmd(string(cmd), string(args), c.conn)
+	command := Structure.NewCmd(string(cmd), processArgs, c.conn)
 
 	//Routing the command to the right handler function
 	switch string(cmd) {
@@ -64,9 +66,8 @@ func (c *client) handle(message []byte) {
 }
 
 func (c *client) changePassword(command *Structure.Command) {
-	args := Helper.ExtractingArgumentsFromCommands("CHANGE_PASSWORD", command.Body)
-	tokenAuth := args["tokenAuth"]
-	password := args["password"]
+	tokenAuth := command.Body["tokenAuth"]
+	password := command.Body["password"]
 	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
 	username, err := Helper.FetchAuth(tokenAuthMap)
 	if err != nil {
@@ -81,9 +82,8 @@ func (c *client) changePassword(command *Structure.Command) {
 }
 
 func (c *client) updateProfile(command *Structure.Command) {
-	args := Helper.ExtractingArgumentsFromCommands("UPDATE_PROFILE", command.Body)
-	tokenAuth := args["tokenAuth"]
-	name := args["name"]
+	tokenAuth := command.Body["tokenAuth"]
+	name := command.Body["name"]
 	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
 	username, err := Helper.FetchAuth(tokenAuthMap)
 	if err != nil {
@@ -97,8 +97,7 @@ func (c *client) updateProfile(command *Structure.Command) {
 }
 
 func (c *client) logout(command *Structure.Command) {
-	args := Helper.ExtractingArgumentsFromCommands("LOGIN", command.Body)
-	tokenAuth := args["tokenAuth"]
+	tokenAuth := command.Body["tokenAuth"]
 	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
 	deleted, delErr := Helper.DeleteAuth(tokenAuthMap["AccessUUID"])
 	if delErr != nil || deleted == 0 { //if anything goes wrong
@@ -108,8 +107,7 @@ func (c *client) logout(command *Structure.Command) {
 }
 
 func (c *client) showProfile(command *Structure.Command) {
-	args := Helper.ExtractingArgumentsFromCommands("LOGIN", command.Body)
-	tokenAuth := args["tokenAuth"]
+	tokenAuth := command.Body["tokenAuth"]
 	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
 
 	username, err := Helper.FetchAuth(tokenAuthMap)
@@ -125,16 +123,14 @@ func (c *client) showProfile(command *Structure.Command) {
 }
 
 func (c *client) login(command *Structure.Command) {
-	//Processing body to get the right arguments
-	args := Helper.ExtractingArgumentsFromCommands("LOGIN", command.Body)
 	//Checking the validity of the credentials
-	check := Helper.ValidateLogin(args["username"], args["password"])
+	check := Helper.ValidateLogin(command.Body["username"], command.Body["password"])
 	//If user is authenticated, get a bearer token and return it to the HTTP Server
 	if check == true {
 		//Token is created for auth
-		token, _ := Helper.CreateToken(args["username"])
+		token, _ := Helper.CreateToken(command.Body["username"])
 		//User is saved in redis
-		saveErr := Helper.CreateAuth(args["username"], token)
+		saveErr := Helper.CreateAuth(command.Body["username"], token)
 		if saveErr != nil {
 			tokens := map[string]string{
 				"access_token": "Invalid Credentials",
