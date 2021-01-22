@@ -5,15 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-
-	"golang.org/x/crypto/bcrypt"
 )
-
-//Hashes the password sent by the user
-func HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	return string(bytes), err
-}
 
 //TCP Communication functions
 func ConnectToTCPServer() net.Conn {

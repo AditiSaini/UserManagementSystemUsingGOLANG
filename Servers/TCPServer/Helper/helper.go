@@ -3,6 +3,8 @@ package helper
 import (
 	"encoding/json"
 	"net"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func SendToHTTPServer(conn net.Conn, response string) {
@@ -18,4 +20,10 @@ func ConvertStringToMap(message string) (map[string]string, error) {
 		return nil, err
 	}
 	return details, nil
+}
+
+//Hashes the password sent by the user
+func HashPassword(password string) ([]byte, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return bytes, err
 }

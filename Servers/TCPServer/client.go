@@ -80,7 +80,8 @@ func (c *client) showProfile(command *Structure.Command) {
 		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
 	}
 	//Function to display the profile of the user from the database
-	Helper.SendToHTTPServer(c.conn, "Welcome "+username)
+	profile := Helper.Show(username)
+	Helper.SendToHTTPServer(c.conn, "Welcome "+profile.Username)
 }
 
 func (c *client) login(command *Structure.Command) {
@@ -95,8 +96,11 @@ func (c *client) login(command *Structure.Command) {
 		//User is saved in redis
 		saveErr := Helper.CreateAuth(args["username"], token)
 		if saveErr != nil {
-			token := "Invalid Credentials"
-			Helper.SendToHTTPServer(c.conn, token)
+			tokens := map[string]string{
+				"access_token": "Invalid Credentials",
+			}
+			out, _ := json.Marshal(tokens)
+			Helper.SendToHTTPServer(c.conn, string(out))
 		}
 		//Data prepared for sending to HTTP server
 		tokens := map[string]string{
@@ -106,7 +110,10 @@ func (c *client) login(command *Structure.Command) {
 		//Data sent to HTTP server
 		Helper.SendToHTTPServer(c.conn, string(out))
 	} else {
-		token := "Invalid Credentials"
-		Helper.SendToHTTPServer(c.conn, token)
+		tokens := map[string]string{
+			"access_token": "Invalid Credentials",
+		}
+		out, _ := json.Marshal(tokens)
+		Helper.SendToHTTPServer(c.conn, string(out))
 	}
 }

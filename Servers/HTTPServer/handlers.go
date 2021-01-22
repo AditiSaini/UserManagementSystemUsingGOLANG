@@ -40,12 +40,7 @@ func loginUser(w http.ResponseWriter, r *http.Request) {
 	username := user.Username
 	password := user.Password
 
-	//The password is hashed
-	hashedPass, err := Helper.HashPassword(password)
-	if err != nil {
-		fmt.Println("Password can't be hashed")
-	}
-	command := "LOGIN username " + username + "|password " + hashedPass
+	command := "LOGIN username " + username + "|password " + password
 	c := Helper.ConnectToTCPServer()
 	message := Helper.GetResponseFromTCPServer(command, c)
 	details, _ := Helper.ConvertStringToMap(message)
