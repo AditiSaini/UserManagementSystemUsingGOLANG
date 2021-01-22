@@ -143,3 +143,14 @@ func uploadPicture(w http.ResponseWriter, r *http.Request) {
 	message := Helper.GetResponseFromTCPServer("upload profile picture handler method", c)
 	w.Write([]byte("Uploading profile picture..." + message))
 }
+
+func changePassword(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.Header().Set("Allow", http.MethodPost)
+		http.Error(w, "Method Not Allowed", 405)
+		return
+	}
+	c := Helper.ConnectToTCPServer()
+	message := Helper.GetResponseFromTCPServer("Change password", c)
+	w.Write([]byte("Changed, " + message))
+}
