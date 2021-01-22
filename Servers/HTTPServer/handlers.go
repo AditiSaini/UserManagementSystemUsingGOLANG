@@ -164,12 +164,37 @@ func uploadPicture(w http.ResponseWriter, r *http.Request) {
 }
 
 func changePassword(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.Header().Set("Allow", http.MethodPost)
-		http.Error(w, "Method Not Allowed", 405)
+	m := make(map[string]string)
+	c := Helper.ConnectToTCPServer()
+	tokenAuth, err := Helper.ExtractTokenMetadata(r)
+	if err != nil {
+		fmt.Println(err)
+		m["profile"] = "Unauthorised Access"
+		jsonString, _ := json.Marshal(m)
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte(jsonString))
 		return
 	}
-	c := Helper.ConnectToTCPServer()
-	message := Helper.GetResponseFromTCPServer("Change password", c)
-	w.Write([]byte("Changed, " + message))
+	b, err := json.Marshal(tokenAuth)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	byteValue, _ := ioutil.ReadAll(r.Body)
+	var result map[string]string
+	json.Unmarshal([]byte(byteValue), &result)
+	command := "CHANGE_PASSWORD tokenAuth " + string(b) + "|password " + result["password"]
+	message := Helper.GetResponseFromTCPServer(command, c)
+	m["status"] = message
+	jsonString, _ := json.Marshal(m)
+	if message == "false" {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(jsonString))
+		return
+	}
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write([]byte(jsonString))
 }

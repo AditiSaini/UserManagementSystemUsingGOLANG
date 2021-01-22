@@ -56,9 +56,28 @@ func (c *client) handle(message []byte) {
 		c.logout(command)
 	case "UPDATE_PROFILE":
 		c.updateProfile(command)
+	case "CHANGE_PASSWORD":
+		c.changePassword(command)
 	default:
 		Helper.SendToHTTPServer(c.conn, "Send a recognizable command to the TCP Server")
 	}
+}
+
+func (c *client) changePassword(command *Structure.Command) {
+	args := Helper.ExtractingArgumentsFromCommands("CHANGE_PASSWORD", command.Body)
+	tokenAuth := args["tokenAuth"]
+	password := args["password"]
+	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
+	username, err := Helper.FetchAuth(tokenAuthMap)
+	if err != nil {
+		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
+	}
+
+	updated, err := Helper.UpdatePassword(password, username)
+	if !updated {
+		Helper.SendToHTTPServer(c.conn, "false")
+	}
+	Helper.SendToHTTPServer(c.conn, "true")
 }
 
 func (c *client) updateProfile(command *Structure.Command) {
@@ -70,7 +89,7 @@ func (c *client) updateProfile(command *Structure.Command) {
 	if err != nil {
 		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
 	}
-	updated, err := Helper.Update(username, name)
+	updated, err := Helper.UpdateProfile(username, name)
 	if !updated {
 		Helper.SendToHTTPServer(c.conn, "false")
 	}
