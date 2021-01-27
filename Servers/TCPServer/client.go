@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -73,7 +74,7 @@ func (c *client) handle(message []byte) {
 func (c *client) receiveUploadedFile(command *Structure.Command) {
 	fmt.Println("Uplading file...")
 	tokenAuth := command.Body["tokenAuth"]
-	byteFile := command.Body["file"]
+	encodedByteFile := command.Body["file"]
 	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
 	_, err := Helper.FetchAuth(tokenAuthMap)
 	if err != nil {
@@ -87,8 +88,13 @@ func (c *client) receiveUploadedFile(command *Structure.Command) {
 	}
 	defer tempFile.Close()
 
+	decoded, err := base64.StdEncoding.DecodeString(encodedByteFile)
+	if err != nil {
+		fmt.Println("decode error:", err)
+		return
+	}
 	//Write the byte array to the temp file
-	tempFile.Write([]byte(byteFile))
+	tempFile.Write([]byte(decoded))
 
 	Helper.SendToHTTPServer(c.conn, "true")
 }

@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"reflect"
-	"unsafe"
 )
 
 func UploadFile(r *http.Request) []byte {
@@ -55,10 +53,4 @@ func UploadFile(r *http.Request) []byte {
 	// 	return
 	// }
 	// fmt.Fprintf(w, "Successfully Uploaded File\n")
-}
-
-func BytesToString(b []byte) string {
-	bh := (*reflect.SliceHeader)(unsafe.Pointer(&b))
-	sh := reflect.StringHeader{bh.Data, bh.Len}
-	return *(*string)(unsafe.Pointer(&sh))
 }

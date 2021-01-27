@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -264,11 +265,13 @@ func uploadPicture(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fileBytes := Helper.UploadFile(r)
+	fileBase64 := base64.StdEncoding.EncodeToString([]byte(fileBytes))
+	// encoded := base64.StdEncoding.EncodeToString(fileBytes)
 
 	// write this byte array to our temporary file
 	// tempFile.Write(fileBytes)
 
-	command := "UPLOAD_PICTURE tokenAuth " + string(b) + "|file " + string(fileBytes)
+	command := "UPLOAD_PICTURE tokenAuth " + string(b) + "|file " + fileBase64
 	message := Helper.GetResponseFromTCPServer(command, c, pool)
 	w.Write([]byte(message))
 }
