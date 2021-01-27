@@ -9,15 +9,14 @@ import (
 var (
 	Host                = "127.0.0.1"
 	Port                = "8081"
-	MIN_NUM_CONNECTIONS = 5
-	MAX_NUM_CONNECTIONS = 10
+	MIN_NUM_CONNECTIONS = 10
+	MAX_NUM_CONNECTIONS = 100
 )
 
 func ConnectToTCPServer(pool *GncpPool) (net.Conn, error) {
 	conn, err := pool.Get()
 	if err != nil {
-		fmt.Println(err)
-		fmt.Println("Establishing connection with timeout...")
+		fmt.Println("Establishing connection with timeout")
 		conn, err = pool.GetWithTimeout(time.Duration(5) * time.Second)
 		if err != nil {
 			fmt.Println(err)

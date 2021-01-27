@@ -12,7 +12,6 @@ import (
 )
 
 var (
-	// pool, _ = Connection.NewPool(Connection.MIN_NUM_CONNECTIONS, Connection.MAX_NUM_CONNECTIONS, Connection.ConnCreator)
 	pool, _ = Connection.NewPool(Connection.MIN_NUM_CONNECTIONS, Connection.MAX_NUM_CONNECTIONS, Connection.ConnCreator)
 )
 
@@ -23,16 +22,15 @@ func home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//Connecting to the tcp server
-	// for i := 0; i <= 10; i++ {
-	// 	_, err := Connection.ConnectToTCPServer(pool)
-	// 	fmt.Println(err)
-	// }
+	if pool == nil {
+		pool, _ = Connection.NewPool(Connection.MIN_NUM_CONNECTIONS, Connection.MAX_NUM_CONNECTIONS, Connection.ConnCreator)
+	}
 	c, err := Connection.ConnectToTCPServer(pool)
 	if err != nil {
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
-	message := Helper.GetResponseFromTCPServer("home page", c, pool)
+	message := Helper.GetResponseFromTCPServer("Home page", c, pool)
 	//Sending information to the client
 	w.Write([]byte("Hello from Home page!!!\n" + message))
 }
@@ -56,6 +54,9 @@ func loginUser(w http.ResponseWriter, r *http.Request) {
 	password := user.Password
 
 	command := "LOGIN username " + username + "|password " + password
+	if pool == nil {
+		pool, _ = Connection.NewPool(Connection.MIN_NUM_CONNECTIONS, Connection.MAX_NUM_CONNECTIONS, Connection.ConnCreator)
+	}
 	c, err := Connection.ConnectToTCPServer(pool)
 	if err != nil {
 		http.Error(w, "Internal Server Error", 500)
@@ -79,6 +80,9 @@ func loginUser(w http.ResponseWriter, r *http.Request) {
 //Logout handler function
 func logoutUser(w http.ResponseWriter, r *http.Request) {
 	m := make(map[string]string)
+	if pool == nil {
+		pool, _ = Connection.NewPool(Connection.MIN_NUM_CONNECTIONS, Connection.MAX_NUM_CONNECTIONS, Connection.ConnCreator)
+	}
 	c, err := Connection.ConnectToTCPServer(pool)
 	if err != nil {
 		http.Error(w, "Internal Server Error", 500)
@@ -111,6 +115,9 @@ func logoutUser(w http.ResponseWriter, r *http.Request) {
 //Show profile handler function
 func showProfile(w http.ResponseWriter, r *http.Request) {
 	m := make(map[string]string)
+	if pool == nil {
+		pool, _ = Connection.NewPool(Connection.MIN_NUM_CONNECTIONS, Connection.MAX_NUM_CONNECTIONS, Connection.ConnCreator)
+	}
 	c, err := Connection.ConnectToTCPServer(pool)
 	if err != nil {
 		http.Error(w, "Internal Server Error", 500)
@@ -142,6 +149,9 @@ func showProfile(w http.ResponseWriter, r *http.Request) {
 //Modify profile handler function
 func updateProfile(w http.ResponseWriter, r *http.Request) {
 	m := make(map[string]string)
+	if pool == nil {
+		pool, _ = Connection.NewPool(Connection.MIN_NUM_CONNECTIONS, Connection.MAX_NUM_CONNECTIONS, Connection.ConnCreator)
+	}
 	c, err := Connection.ConnectToTCPServer(pool)
 	if err != nil {
 		http.Error(w, "Internal Server Error", 500)
@@ -184,6 +194,9 @@ func updateProfile(w http.ResponseWriter, r *http.Request) {
 //Change the user password
 func changePassword(w http.ResponseWriter, r *http.Request) {
 	m := make(map[string]string)
+	if pool == nil {
+		pool, _ = Connection.NewPool(Connection.MIN_NUM_CONNECTIONS, Connection.MAX_NUM_CONNECTIONS, Connection.ConnCreator)
+	}
 	c, err := Connection.ConnectToTCPServer(pool)
 	if err != nil {
 		http.Error(w, "Internal Server Error", 500)
@@ -228,6 +241,9 @@ func uploadPicture(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Allow", http.MethodPost)
 		http.Error(w, "Method Not Allowed", 405)
 		return
+	}
+	if pool == nil {
+		pool, _ = Connection.NewPool(Connection.MIN_NUM_CONNECTIONS, Connection.MAX_NUM_CONNECTIONS, Connection.ConnCreator)
 	}
 	c, err := Connection.ConnectToTCPServer(pool)
 	if err != nil {
