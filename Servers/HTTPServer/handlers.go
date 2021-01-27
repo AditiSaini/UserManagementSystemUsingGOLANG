@@ -17,6 +17,7 @@ var (
 
 //Routing handler functions
 func home(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("I am here")
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return
@@ -237,11 +238,7 @@ func changePassword(w http.ResponseWriter, r *http.Request) {
 
 //Upload profile picture
 func uploadPicture(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.Header().Set("Allow", http.MethodPost)
-		http.Error(w, "Method Not Allowed", 405)
-		return
-	}
+	m := make(map[string]string)
 	if pool == nil {
 		pool, _ = Connection.NewPool(Connection.MIN_NUM_CONNECTIONS, Connection.MAX_NUM_CONNECTIONS, Connection.ConnCreator)
 	}
@@ -250,6 +247,28 @@ func uploadPicture(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
-	message := Helper.GetResponseFromTCPServer("upload profile picture handler method", c, pool)
-	w.Write([]byte("Uploading profile picture..." + message))
+	tokenAuth, err := Helper.ExtractTokenMetadata(r)
+	if err != nil {
+		fmt.Println(err)
+		m["profile"] = "Unauthorised Access"
+		jsonString, _ := json.Marshal(m)
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte(jsonString))
+		return
+	}
+	b, err := json.Marshal(tokenAuth)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fileBytes := Helper.UploadFile(r)
+
+	// write this byte array to our temporary file
+	// tempFile.Write(fileBytes)
+
+	command := "UPLOAD_PICTURE tokenAuth " + string(b) + "|file " + string(fileBytes)
+	message := Helper.GetResponseFromTCPServer(command, c, pool)
+	w.Write([]byte(message))
 }

@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net"
 
 	Helper "./Helper"
@@ -12,7 +13,8 @@ import (
 )
 
 var (
-	DELIMITER = []byte(`\r\n`)
+	DELIMITER   = []byte(`\r\n`)
+	imageUpload = false
 )
 
 type client struct {
@@ -29,6 +31,7 @@ func (c *client) read() error {
 	for {
 		msg, err := bufio.NewReader(c.conn).ReadBytes('\n')
 		if err != nil {
+			fmt.Println(err)
 			return err
 		}
 		c.handle(msg)
@@ -60,9 +63,34 @@ func (c *client) handle(message []byte) {
 		c.updateProfile(command)
 	case "CHANGE_PASSWORD":
 		c.changePassword(command)
+	case "UPLOAD_PICTURE":
+		c.receiveUploadedFile(command)
 	default:
 		Helper.SendToHTTPServer(c.conn, "Send a recognizable command to the TCP Server")
 	}
+}
+
+func (c *client) receiveUploadedFile(command *Structure.Command) {
+	fmt.Println("Uplading file...")
+	tokenAuth := command.Body["tokenAuth"]
+	byteFile := command.Body["file"]
+	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
+	_, err := Helper.FetchAuth(tokenAuthMap)
+	if err != nil {
+		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
+	}
+	//Create a temp file
+	name := "upload-*.png"
+	tempFile, err := ioutil.TempFile("Pictures", name)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer tempFile.Close()
+
+	//Write the byte array to the temp file
+	tempFile.Write([]byte(byteFile))
+
+	Helper.SendToHTTPServer(c.conn, "true")
 }
 
 func (c *client) changePassword(command *Structure.Command) {
