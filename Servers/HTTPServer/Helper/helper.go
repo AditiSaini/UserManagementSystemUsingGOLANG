@@ -2,6 +2,7 @@ package helper
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"net"
 
@@ -35,7 +36,15 @@ func GetResponseFromTCPServer(command string, c net.Conn) string {
 
 	//Receiving message from the TCP server
 	message, _ := bufio.NewReader(c).ReadString('\n')
-	fmt.Print("->: " + message)
 	CloseTCPConnection(c)
 	return message
+}
+
+func ConvertStringToMap(message string) (map[string]string, error) {
+	details := make(map[string]string)
+	err := json.Unmarshal([]byte(message), &details)
+	if err != nil {
+		return nil, err
+	}
+	return details, nil
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"net"
 
@@ -49,9 +50,37 @@ func (c *client) handle(message []byte) {
 	switch string(cmd) {
 	case "LOGIN":
 		c.login(command)
+	case "SHOW_PROFILE":
+		c.showProfile(command)
+	case "LOGOUT":
+		c.logout(command)
 	default:
-		c.conn.Write([]byte("Send a recognizable command to the TCP Server"))
+		Helper.SendToHTTPServer(c.conn, "Send a recognizable command to the TCP Server")
 	}
+}
+
+func (c *client) logout(command *Structure.Command) {
+	args := Helper.ExtractingArgumentsFromCommands("LOGIN", command.Body)
+	tokenAuth := args["tokenAuth"]
+	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
+	deleted, delErr := Helper.DeleteAuth(tokenAuthMap["AccessUUID"])
+	if delErr != nil || deleted == 0 { //if any goes wrong
+		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
+	}
+	Helper.SendToHTTPServer(c.conn, "Logged out!")
+}
+
+func (c *client) showProfile(command *Structure.Command) {
+	args := Helper.ExtractingArgumentsFromCommands("LOGIN", command.Body)
+	tokenAuth := args["tokenAuth"]
+	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
+
+	username, err := Helper.FetchAuth(tokenAuthMap)
+	if err != nil {
+		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
+	}
+	//Function to display the profile of the user from the database
+	Helper.SendToHTTPServer(c.conn, "Welcome "+username)
 }
 
 func (c *client) login(command *Structure.Command) {
@@ -61,10 +90,23 @@ func (c *client) login(command *Structure.Command) {
 	check := Helper.ValidateLogin(args["username"], args["password"])
 	//If user is authenticated, get a bearer token and return it to the HTTP Server
 	if check == true {
-		token := Helper.CreateToken(args["username"])
-		Helper.SendToHTTPServer(c.conn, "Ok, logged in with token: "+token)
+		//Token is created for auth
+		token, _ := Helper.CreateToken(args["username"])
+		//User is saved in redis
+		saveErr := Helper.CreateAuth(args["username"], token)
+		if saveErr != nil {
+			token := "Invalid Credentials"
+			Helper.SendToHTTPServer(c.conn, token)
+		}
+		//Data prepared for sending to HTTP server
+		tokens := map[string]string{
+			"access_token": token.AccessToken,
+		}
+		out, _ := json.Marshal(tokens)
+		//Data sent to HTTP server
+		Helper.SendToHTTPServer(c.conn, string(out))
 	} else {
 		token := "Invalid Credentials"
-		Helper.SendToHTTPServer(c.conn, "Ok, logged in with token: "+token)
+		Helper.SendToHTTPServer(c.conn, token)
 	}
 }
