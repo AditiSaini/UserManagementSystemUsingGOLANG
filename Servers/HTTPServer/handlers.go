@@ -18,7 +18,6 @@ var (
 
 //Routing handler functions
 func home(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("I am here")
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return

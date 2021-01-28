@@ -33,20 +33,13 @@ func Show(username string) Structure.Profile {
 		var username string
 		var nickname string
 		var password []byte
-		var picture sql.NullString
-		err = selDB.Scan(&id, &username, &nickname, &password, &picture)
+		err = selDB.Scan(&id, &username, &nickname, &password)
 		if err != nil {
 			panic(err.Error())
 		}
 		profile.ID = id
 		profile.Username = username
 		profile.Nickname = nickname
-		if picture.Valid {
-			profile.ProfilePicture = picture.String
-		} else {
-			profile.ProfilePicture = ""
-		}
-
 		profile.Password = password
 		profile.Valid = true
 	}
