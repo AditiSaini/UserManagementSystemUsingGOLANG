@@ -43,8 +43,10 @@ func (c *client) handle(message []byte) {
 	cmd := bytes.ToUpper(bytes.TrimSpace(bytes.Split(message, []byte(" "))[0]))
 	//Step 2- Extract the arguments of the command
 	args := bytes.TrimSpace(bytes.TrimPrefix(message, cmd))
+	//Step 3- Processing the arguments of the command
+	processArgs := Helper.ExtractingArgumentsFromCommands(string(cmd), string(args))
 	//Converted into the command data structure
-	command := Structure.NewCmd(string(cmd), string(args), c.conn)
+	command := Structure.NewCmd(string(cmd), processArgs, c.conn)
 
 	//Routing the command to the right handler function
 	switch string(cmd) {
@@ -54,25 +56,58 @@ func (c *client) handle(message []byte) {
 		c.showProfile(command)
 	case "LOGOUT":
 		c.logout(command)
+	case "UPDATE_PROFILE":
+		c.updateProfile(command)
+	case "CHANGE_PASSWORD":
+		c.changePassword(command)
 	default:
 		Helper.SendToHTTPServer(c.conn, "Send a recognizable command to the TCP Server")
 	}
 }
 
+func (c *client) changePassword(command *Structure.Command) {
+	tokenAuth := command.Body["tokenAuth"]
+	password := command.Body["password"]
+	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
+	username, err := Helper.FetchAuth(tokenAuthMap)
+	if err != nil {
+		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
+	}
+
+	updated, err := Helper.UpdatePassword(password, username)
+	if !updated {
+		Helper.SendToHTTPServer(c.conn, "false")
+	}
+	Helper.SendToHTTPServer(c.conn, "true")
+}
+
+func (c *client) updateProfile(command *Structure.Command) {
+	tokenAuth := command.Body["tokenAuth"]
+	name := command.Body["name"]
+	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
+	username, err := Helper.FetchAuth(tokenAuthMap)
+	if err != nil {
+		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
+	}
+	updated, err := Helper.UpdateProfile(username, name)
+	if !updated {
+		Helper.SendToHTTPServer(c.conn, "false")
+	}
+	Helper.SendToHTTPServer(c.conn, "true")
+}
+
 func (c *client) logout(command *Structure.Command) {
-	args := Helper.ExtractingArgumentsFromCommands("LOGIN", command.Body)
-	tokenAuth := args["tokenAuth"]
+	tokenAuth := command.Body["tokenAuth"]
 	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
 	deleted, delErr := Helper.DeleteAuth(tokenAuthMap["AccessUUID"])
-	if delErr != nil || deleted == 0 { //if any goes wrong
+	if delErr != nil || deleted == 0 { //if anything goes wrong
 		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
 	}
 	Helper.SendToHTTPServer(c.conn, "Logged out!")
 }
 
 func (c *client) showProfile(command *Structure.Command) {
-	args := Helper.ExtractingArgumentsFromCommands("LOGIN", command.Body)
-	tokenAuth := args["tokenAuth"]
+	tokenAuth := command.Body["tokenAuth"]
 	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
 
 	username, err := Helper.FetchAuth(tokenAuthMap)
@@ -80,23 +115,28 @@ func (c *client) showProfile(command *Structure.Command) {
 		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
 	}
 	//Function to display the profile of the user from the database
-	Helper.SendToHTTPServer(c.conn, "Welcome "+username)
+	profile := Helper.Show(username)
+	profileMap := Helper.ConvertStructToMap(profile)
+
+	out, _ := json.Marshal(profileMap)
+	Helper.SendToHTTPServer(c.conn, string(out))
 }
 
 func (c *client) login(command *Structure.Command) {
-	//Processing body to get the right arguments
-	args := Helper.ExtractingArgumentsFromCommands("LOGIN", command.Body)
 	//Checking the validity of the credentials
-	check := Helper.ValidateLogin(args["username"], args["password"])
+	check := Helper.ValidateLogin(command.Body["username"], command.Body["password"])
 	//If user is authenticated, get a bearer token and return it to the HTTP Server
 	if check == true {
 		//Token is created for auth
-		token, _ := Helper.CreateToken(args["username"])
+		token, _ := Helper.CreateToken(command.Body["username"])
 		//User is saved in redis
-		saveErr := Helper.CreateAuth(args["username"], token)
+		saveErr := Helper.CreateAuth(command.Body["username"], token)
 		if saveErr != nil {
-			token := "Invalid Credentials"
-			Helper.SendToHTTPServer(c.conn, token)
+			tokens := map[string]string{
+				"access_token": "Invalid Credentials",
+			}
+			out, _ := json.Marshal(tokens)
+			Helper.SendToHTTPServer(c.conn, string(out))
 		}
 		//Data prepared for sending to HTTP server
 		tokens := map[string]string{
@@ -106,7 +146,10 @@ func (c *client) login(command *Structure.Command) {
 		//Data sent to HTTP server
 		Helper.SendToHTTPServer(c.conn, string(out))
 	} else {
-		token := "Invalid Credentials"
-		Helper.SendToHTTPServer(c.conn, token)
+		tokens := map[string]string{
+			"access_token": "Invalid Credentials",
+		}
+		out, _ := json.Marshal(tokens)
+		Helper.SendToHTTPServer(c.conn, string(out))
 	}
 }

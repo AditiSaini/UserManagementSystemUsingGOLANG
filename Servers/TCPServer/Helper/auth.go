@@ -12,12 +12,15 @@ import (
 )
 
 func ValidateLogin(username string, password string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(password), []byte("12345"))
-	if err != nil {
-		log.Println(err)
-		return false
-	}
-	if username == "Aditi" {
+	profile := Show(username)
+	if profile.Valid {
+		//>>>>>>>Need to be modified since hash is stored in the db and not plain text<<<<<<<<
+		hashed, _ := HashPassword(password)
+		err := bcrypt.CompareHashAndPassword(hashed, []byte(profile.Password))
+		if err != nil {
+			log.Println(err)
+			return false
+		}
 		return true
 	}
 	return false

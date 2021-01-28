@@ -2,7 +2,7 @@ package structure
 
 import "net"
 
-func NewCmd(id string, body string, conn net.Conn) *Command {
+func NewCmd(id string, body map[string]string, conn net.Conn) *Command {
 	return &Command{
 		Id:   id,
 		Body: body,
@@ -14,7 +14,7 @@ type Command struct {
 	//Identification of the commands
 	Id string
 	//Body of the command sent by the sender
-	Body string
+	Body map[string]string
 	//Connection being used to connect to the server
 	Conn net.Conn
 }

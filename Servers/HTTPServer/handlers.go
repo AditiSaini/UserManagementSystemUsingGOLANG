@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	Helper "./Helper"
@@ -40,19 +41,19 @@ func loginUser(w http.ResponseWriter, r *http.Request) {
 	username := user.Username
 	password := user.Password
 
-	//The password is hashed
-	hashedPass, err := Helper.HashPassword(password)
-	if err != nil {
-		fmt.Println("Password can't be hashed")
-	}
-	command := "LOGIN username " + username + "|password " + hashedPass
+	command := "LOGIN username " + username + "|password " + password
 	c := Helper.ConnectToTCPServer()
 	message := Helper.GetResponseFromTCPServer(command, c)
 	details, _ := Helper.ConvertStringToMap(message)
 	m["command"] = "LOGIN"
 	m["access_token"] = details["access_token"]
 	jsonString, _ := json.Marshal(m)
-
+	if details["access_token"] == "Invalid Credentials" {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte(jsonString))
+		return
+	}
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.Write([]byte(jsonString))
 }
@@ -106,27 +107,85 @@ func showProfile(w http.ResponseWriter, r *http.Request) {
 	}
 	command := "SHOW_PROFILE tokenAuth " + string(b)
 	message := Helper.GetResponseFromTCPServer(command, c)
-	w.Write([]byte(message))
+	details, _ := Helper.ConvertStringToMap(message)
+	jsonString, _ := json.Marshal(details)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonString)
 }
 
 //Modify profile handler function
 func updateProfile(w http.ResponseWriter, r *http.Request) {
-	// Use r.Method to check whether the request is using POST or not. Note that
-	// http.MethodPost is a constant equal to the string "POST".
-	if r.Method != http.MethodPost {
-		// If it's not, use the w.WriteHeader() method to send a 405 status
-		// code and the w.Write() method to write a "Method Not Allowed"
-		// response body. We then return from the function so that the
-		// subsequent code is not executed.
-		w.Header().Set("Allow", http.MethodPost)
-		// Use the http.Error() function to send a 405 status code and "Method Not
-		// Allowed" string as the response body.
-		http.Error(w, "Method Not Allowed", 405)
+	m := make(map[string]string)
+	c := Helper.ConnectToTCPServer()
+	tokenAuth, err := Helper.ExtractTokenMetadata(r)
+	if err != nil {
+		fmt.Println(err)
+		m["profile"] = "Unauthorised Access"
+		jsonString, _ := json.Marshal(m)
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte(jsonString))
 		return
 	}
+	b, err := json.Marshal(tokenAuth)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	byteValue, _ := ioutil.ReadAll(r.Body)
+	var result map[string]string
+	json.Unmarshal([]byte(byteValue), &result)
+
+	command := "UPDATE_PROFILE tokenAuth " + string(b) + "|name " + result["name"]
+	message := Helper.GetResponseFromTCPServer(command, c)
+	m["status"] = message
+	jsonString, _ := json.Marshal(m)
+	if message == "false" {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(jsonString))
+		return
+	}
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write([]byte(jsonString))
+}
+
+//Change the user password
+func changePassword(w http.ResponseWriter, r *http.Request) {
+	m := make(map[string]string)
 	c := Helper.ConnectToTCPServer()
-	message := Helper.GetResponseFromTCPServer("update profile handler method", c)
-	w.Write([]byte("Modify user profile..." + message))
+	tokenAuth, err := Helper.ExtractTokenMetadata(r)
+	if err != nil {
+		fmt.Println(err)
+		m["profile"] = "Unauthorised Access"
+		jsonString, _ := json.Marshal(m)
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte(jsonString))
+		return
+	}
+	b, err := json.Marshal(tokenAuth)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	byteValue, _ := ioutil.ReadAll(r.Body)
+	var result map[string]string
+	json.Unmarshal([]byte(byteValue), &result)
+	command := "CHANGE_PASSWORD tokenAuth " + string(b) + "|password " + result["password"]
+	message := Helper.GetResponseFromTCPServer(command, c)
+	m["status"] = message
+	jsonString, _ := json.Marshal(m)
+	if message == "false" {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(jsonString))
+		return
+	}
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write([]byte(jsonString))
 }
 
 //Upload profile picture
