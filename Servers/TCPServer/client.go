@@ -87,31 +87,19 @@ func (c *client) showUploadedFile(command *Structure.Command) {
 		return
 	}
 
-	//Get the filename with the username
-	var files []string
-	root := "./Pictures"
-	err = filepath.Walk(root, Helper.Visit(&files))
+	//Function to display the profile of the user from the database
+	profile := Helper.Show(username)
+	profileMap := Helper.ConvertStructToMap(profile)
+	//Read all the content of the uploaded file into a byte array
+	byteFile, err := ioutil.ReadFile(profileMap["ImageRef"])
+	//Convert the byte array into base64
+	fileBase64 := base64.StdEncoding.EncodeToString([]byte(byteFile))
 	if err != nil {
-		panic(err)
+		fmt.Print(err)
+		Helper.SendToHTTPServer(c.conn, "false")
+		return
 	}
-	for _, file := range files {
-		fileName := strings.Split(file, "/")[1]
-		name := strings.Split(fileName, "-")[0]
-		if name == username {
-			fileName := file
-			//Serve the image to the client
-			//Read all the content of the uploaded file into a byte array
-			byteFile, err := ioutil.ReadFile(fileName)
-			//Convert the byte array into base64
-			fileBase64 := base64.StdEncoding.EncodeToString([]byte(byteFile))
-			if err != nil {
-				fmt.Print(err)
-			}
-			Helper.SendToHTTPServer(c.conn, fileBase64)
-			return
-		}
-	}
-	Helper.SendToHTTPServer(c.conn, "false")
+	Helper.SendToHTTPServer(c.conn, fileBase64)
 	return
 }
 
@@ -150,6 +138,14 @@ func (c *client) receiveUploadedFile(command *Structure.Command) {
 		fmt.Println(err)
 	}
 	defer tempFile.Close()
+
+	//Update the image ref in the db
+	finalName := tempFile.Name()
+	_, err = Helper.UpdateImageRef(finalName, username)
+	if err != nil {
+		fmt.Println("Image was not added to the db:", err)
+		return
+	}
 
 	decoded, err := base64.StdEncoding.DecodeString(encodedByteFile)
 	if err != nil {
