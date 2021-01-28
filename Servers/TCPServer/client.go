@@ -70,9 +70,48 @@ func (c *client) handle(message []byte) {
 		c.changePassword(command)
 	case "UPLOAD_PICTURE":
 		c.receiveUploadedFile(command)
+	case "SHOW_PICTURE":
+		c.showUploadedFile(command)
 	default:
 		Helper.SendToHTTPServer(c.conn, "Send a recognizable command to the TCP Server")
 	}
+}
+
+func (c *client) showUploadedFile(command *Structure.Command) {
+	fmt.Println("Sending uploaded file")
+	tokenAuth := command.Body["tokenAuth"]
+	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
+	username, err := Helper.FetchAuth(tokenAuthMap)
+	if err != nil {
+		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
+	}
+
+	//Get the filename with the username
+	var files []string
+	root := "./Pictures"
+	err = filepath.Walk(root, Helper.Visit(&files))
+	if err != nil {
+		panic(err)
+	}
+	for _, file := range files {
+		fileName := strings.Split(file, "/")[1]
+		name := strings.Split(fileName, "-")[0]
+		if name == username {
+			fileName := file
+			//Serve the image to the client
+			//Read all the content of the uploaded file into a byte array
+			byteFile, err := ioutil.ReadFile(fileName)
+			//Convert the byte array into base64
+			fileBase64 := base64.StdEncoding.EncodeToString([]byte(byteFile))
+			if err != nil {
+				fmt.Print(err)
+			}
+			Helper.SendToHTTPServer(c.conn, fileBase64)
+			return
+		}
+	}
+	Helper.SendToHTTPServer(c.conn, "false")
+	return
 }
 
 func (c *client) receiveUploadedFile(command *Structure.Command) {

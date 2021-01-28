@@ -237,6 +237,50 @@ func changePassword(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(jsonString))
 }
 
+//Show Profile picture
+func showPicture(w http.ResponseWriter, r *http.Request) {
+	m := make(map[string]string)
+	if pool == nil {
+		pool, _ = Connection.NewPool(Connection.MIN_NUM_CONNECTIONS, Connection.MAX_NUM_CONNECTIONS, Connection.ConnCreator)
+	}
+	c, err := Connection.ConnectToTCPServer(pool)
+	if err != nil {
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+	tokenAuth, err := Helper.ExtractTokenMetadata(r)
+	if err != nil {
+		fmt.Println(err)
+		m["profile"] = "Unauthorised Access"
+		jsonString, _ := json.Marshal(m)
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte(jsonString))
+		return
+	}
+	b, err := json.Marshal(tokenAuth)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	command := "SHOW_PICTURE tokenAuth " + string(b)
+	message := Helper.GetResponseFromTCPServer(command, c, pool)
+	if message != "false" {
+		decoded, err := base64.StdEncoding.DecodeString(message)
+		if err != nil {
+			fmt.Println("decode error:", err)
+			return
+		}
+		w.Header().Set("Content-Type", "image/png")
+		_, err = w.Write(decoded)
+		return
+	}
+	m["status"] = "false"
+	jsonString, _ := json.Marshal(m)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write([]byte(jsonString))
+}
+
 //Upload profile picture
 func uploadPicture(w http.ResponseWriter, r *http.Request) {
 	m := make(map[string]string)

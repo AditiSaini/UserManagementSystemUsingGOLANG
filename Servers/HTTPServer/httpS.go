@@ -18,6 +18,7 @@ func main() {
 	router.HandleFunc("/profile", showProfile).Methods("GET")
 	router.HandleFunc("/profile/update", updateProfile).Methods("POST")
 	router.HandleFunc("/uploadProfilePicture", uploadPicture).Methods("POST")
+	router.HandleFunc("/showProfilePicture", showPicture).Methods("GET")
 	router.HandleFunc("/changePassword", changePassword).Methods("POST")
 
 	log.Println("Starting server on :4000")
