@@ -4,7 +4,7 @@ type Profile struct {
 	ID             int64
 	Username       string
 	Nickname       string
-	Password       string
+	Password       []byte
 	ProfilePicture string
 	Valid          bool
 }

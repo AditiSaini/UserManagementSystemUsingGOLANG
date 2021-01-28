@@ -173,8 +173,9 @@ func (c *client) changePassword(command *Structure.Command) {
 		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
 		return
 	}
-
-	updated, err := Helper.UpdatePassword(password, username)
+	//Hash the password before storing into the database
+	hashed, _ := Helper.HashPassword(password)
+	updated, err := Helper.UpdatePassword(hashed, username)
 	if !updated {
 		Helper.SendToHTTPServer(c.conn, "false")
 		return
