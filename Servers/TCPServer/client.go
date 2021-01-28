@@ -84,6 +84,7 @@ func (c *client) showUploadedFile(command *Structure.Command) {
 	username, err := Helper.FetchAuth(tokenAuthMap)
 	if err != nil {
 		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
+		return
 	}
 
 	//Get the filename with the username
@@ -121,6 +122,7 @@ func (c *client) receiveUploadedFile(command *Structure.Command) {
 	username, err := Helper.FetchAuth(tokenAuthMap)
 	if err != nil {
 		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
+		return
 	}
 
 	//Delete all the other files with the same username
@@ -159,6 +161,7 @@ func (c *client) receiveUploadedFile(command *Structure.Command) {
 	tempFile.Write([]byte(decoded))
 
 	Helper.SendToHTTPServer(c.conn, "true")
+	return
 }
 
 func (c *client) changePassword(command *Structure.Command) {
@@ -168,13 +171,16 @@ func (c *client) changePassword(command *Structure.Command) {
 	username, err := Helper.FetchAuth(tokenAuthMap)
 	if err != nil {
 		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
+		return
 	}
 
 	updated, err := Helper.UpdatePassword(password, username)
 	if !updated {
 		Helper.SendToHTTPServer(c.conn, "false")
+		return
 	}
 	Helper.SendToHTTPServer(c.conn, "true")
+	return
 }
 
 func (c *client) updateProfile(command *Structure.Command) {
@@ -184,12 +190,15 @@ func (c *client) updateProfile(command *Structure.Command) {
 	username, err := Helper.FetchAuth(tokenAuthMap)
 	if err != nil {
 		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
+		return
 	}
 	updated, err := Helper.UpdateProfile(username, name)
 	if !updated {
 		Helper.SendToHTTPServer(c.conn, "false")
+		return
 	}
 	Helper.SendToHTTPServer(c.conn, "true")
+	return
 }
 
 func (c *client) logout(command *Structure.Command) {
@@ -198,8 +207,10 @@ func (c *client) logout(command *Structure.Command) {
 	deleted, delErr := Helper.DeleteAuth(tokenAuthMap["AccessUUID"])
 	if delErr != nil || deleted == 0 { //if anything goes wrong
 		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
+		return
 	}
 	Helper.SendToHTTPServer(c.conn, "Logged out!")
+	return
 }
 
 func (c *client) showProfile(command *Structure.Command) {
@@ -209,6 +220,7 @@ func (c *client) showProfile(command *Structure.Command) {
 	username, err := Helper.FetchAuth(tokenAuthMap)
 	if err != nil {
 		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
+		return
 	}
 	//Function to display the profile of the user from the database
 	profile := Helper.Show(username)
@@ -216,6 +228,7 @@ func (c *client) showProfile(command *Structure.Command) {
 
 	out, _ := json.Marshal(profileMap)
 	Helper.SendToHTTPServer(c.conn, string(out))
+	return
 }
 
 func (c *client) login(command *Structure.Command) {
@@ -233,6 +246,7 @@ func (c *client) login(command *Structure.Command) {
 			}
 			out, _ := json.Marshal(tokens)
 			Helper.SendToHTTPServer(c.conn, string(out))
+			return
 		}
 		//Data prepared for sending to HTTP server
 		tokens := map[string]string{
@@ -241,11 +255,13 @@ func (c *client) login(command *Structure.Command) {
 		out, _ := json.Marshal(tokens)
 		//Data sent to HTTP server
 		Helper.SendToHTTPServer(c.conn, string(out))
+		return
 	} else {
 		tokens := map[string]string{
 			"access_token": "Invalid Credentials",
 		}
 		out, _ := json.Marshal(tokens)
 		Helper.SendToHTTPServer(c.conn, string(out))
+		return
 	}
 }
