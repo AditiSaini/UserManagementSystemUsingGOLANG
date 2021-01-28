@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strings"
 
-	Structure "../Structure"
-
 	"github.com/dgrijalva/jwt-go"
+
+	Structure "servers/HTTPServer/Structure"
 )
 
 func ExtractToken(r *http.Request) string {

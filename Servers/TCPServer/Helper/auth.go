@@ -8,7 +8,7 @@ import (
 	"github.com/twinj/uuid"
 	"golang.org/x/crypto/bcrypt"
 
-	Structure "../Structure"
+	Structure "servers/TCPServer/Structure"
 )
 
 func ValidateLogin(username string, password string) bool {

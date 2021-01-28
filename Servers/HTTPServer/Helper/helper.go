@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net"
 
-	Connection "../ConnectionPool"
+	Connection "servers/HTTPServer/ConnectionPool"
 )
 
 //TCP Communication functions

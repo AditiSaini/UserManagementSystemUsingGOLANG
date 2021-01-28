@@ -6,7 +6,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 
-	Structure "../Structure"
+	Structure "servers/TCPServer/Structure"
 )
 
 func dbConn() (db *sql.DB) {

@@ -7,9 +7,9 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	Connection "./ConnectionPool"
-	Helper "./Helper"
-	Structure "./Structure"
+	Connection "servers/HTTPServer/ConnectionPool"
+	Helper "servers/HTTPServer/Helper"
+	Structure "servers/HTTPServer/Structure"
 )
 
 var (

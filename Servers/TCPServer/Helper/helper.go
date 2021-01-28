@@ -9,7 +9,7 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	Structure "../Structure"
+	Structure "servers/TCPServer/Structure"
 )
 
 func SendToHTTPServer(conn net.Conn, response string) {

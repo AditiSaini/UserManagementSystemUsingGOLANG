@@ -13,8 +13,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	Helper "./Helper"
-	Structure "./Structure"
+	Helper "servers/TCPServer/Helper"
+	Structure "servers/TCPServer/Structure"
 )
 
 var (
