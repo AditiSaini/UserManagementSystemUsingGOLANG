@@ -266,12 +266,18 @@ func uploadPicture(w http.ResponseWriter, r *http.Request) {
 
 	fileBytes := Helper.UploadFile(r)
 	fileBase64 := base64.StdEncoding.EncodeToString([]byte(fileBytes))
-	// encoded := base64.StdEncoding.EncodeToString(fileBytes)
-
-	// write this byte array to our temporary file
-	// tempFile.Write(fileBytes)
 
 	command := "UPLOAD_PICTURE tokenAuth " + string(b) + "|file " + fileBase64
 	message := Helper.GetResponseFromTCPServer(command, c, pool)
-	w.Write([]byte(message))
+
+	m["status"] = message
+	jsonString, _ := json.Marshal(m)
+	if message == "false" {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(jsonString))
+		return
+	}
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write([]byte(jsonString))
 }

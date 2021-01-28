@@ -7,7 +7,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net"
+	"os"
+	"path/filepath"
+	"strings"
 
 	Helper "./Helper"
 	Structure "./Structure"
@@ -40,8 +44,6 @@ func (c *client) read() error {
 }
 
 func (c *client) handle(message []byte) {
-	fmt.Println("Handling command: " + string(message))
-
 	//Processing commands sent by the HTTP Server
 	//Step 1- Get the command
 	cmd := bytes.ToUpper(bytes.TrimSpace(bytes.Split(message, []byte(" "))[0]))
@@ -51,6 +53,8 @@ func (c *client) handle(message []byte) {
 	processArgs := Helper.ExtractingArgumentsFromCommands(string(cmd), string(args))
 	//Converted into the command data structure
 	command := Structure.NewCmd(string(cmd), processArgs, c.conn)
+
+	fmt.Println("Handling command: " + string(cmd))
 
 	//Routing the command to the right handler function
 	switch string(cmd) {
@@ -72,16 +76,34 @@ func (c *client) handle(message []byte) {
 }
 
 func (c *client) receiveUploadedFile(command *Structure.Command) {
-	fmt.Println("Uplading file...")
 	tokenAuth := command.Body["tokenAuth"]
 	encodedByteFile := command.Body["file"]
 	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
-	_, err := Helper.FetchAuth(tokenAuthMap)
+	username, err := Helper.FetchAuth(tokenAuthMap)
 	if err != nil {
 		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
 	}
+
+	//Delete all the other files with the same username
+	var files []string
+	root := "./Pictures"
+	err = filepath.Walk(root, Helper.Visit(&files))
+	if err != nil {
+		panic(err)
+	}
+	for _, file := range files {
+		fileName := strings.Split(file, "/")[1]
+		name := strings.Split(fileName, "-")[0]
+		if name == username {
+			e := os.Remove(file)
+			if e != nil {
+				log.Fatal(e)
+			}
+		}
+	}
+
 	//Create a temp file
-	name := "upload-*.png"
+	name := username + "-*.png"
 	tempFile, err := ioutil.TempFile("Pictures", name)
 	if err != nil {
 		fmt.Println(err)
@@ -93,6 +115,7 @@ func (c *client) receiveUploadedFile(command *Structure.Command) {
 		fmt.Println("decode error:", err)
 		return
 	}
+
 	//Write the byte array to the temp file
 	tempFile.Write([]byte(decoded))
 

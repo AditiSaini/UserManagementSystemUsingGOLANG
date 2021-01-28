@@ -30,27 +30,4 @@ func UploadFile(r *http.Request) []byte {
 	}
 
 	return fileBytes
-
-	// // Create file
-	// dst, err := os.Create(handler.Filename)
-	// defer dst.Close()
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-
-	// //Open file to upload
-	// fi, err := os.Open(handler.Filename)
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-	// defer fi.Close()
-
-	// Copy the uploaded file to the created file on the filesystem
-	// if _, err := io.Copy(conn, fi); err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-	// fmt.Fprintf(w, "Successfully Uploaded File\n")
 }
