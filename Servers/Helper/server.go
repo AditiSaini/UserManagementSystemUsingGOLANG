@@ -11,7 +11,6 @@ import (
 func SendToHTTPServer(conn net.Conn, response string) {
 	//Connecting to the HTTP Server to send the response
 	conn.Write([]byte(response))
-	conn.Close()
 }
 
 func GetResponseFromTCPServer(command string, c net.Conn, pool *Connection.GncpPool) string {

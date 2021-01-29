@@ -76,7 +76,7 @@ func (c *client) handle(message []byte) {
 	case "SHOW_PICTURE":
 		c.showUploadedFile(command)
 	default:
-		Helper.SendToHTTPServer(c.conn, "Send a recognizable command to the TCP Server")
+		Helper.SendToHTTPServer(c.conn, "Send a recognizable command to the TCP Server\n")
 	}
 }
 
@@ -86,7 +86,7 @@ func (c *client) showUploadedFile(command *Structure.Command) {
 	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
 	username, err := Redis.FetchAuth(tokenAuthMap)
 	if err != nil {
-		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
+		Helper.SendToHTTPServer(c.conn, "Unauthorised access\n")
 		return
 	}
 
@@ -99,7 +99,7 @@ func (c *client) showUploadedFile(command *Structure.Command) {
 	fileBase64 := base64.StdEncoding.EncodeToString([]byte(byteFile))
 	if err != nil {
 		fmt.Print(err)
-		Helper.SendToHTTPServer(c.conn, "false")
+		Helper.SendToHTTPServer(c.conn, "false\n")
 		return
 	}
 	Helper.SendToHTTPServer(c.conn, fileBase64)
@@ -112,7 +112,7 @@ func (c *client) receiveUploadedFile(command *Structure.Command) {
 	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
 	username, err := Redis.FetchAuth(tokenAuthMap)
 	if err != nil {
-		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
+		Helper.SendToHTTPServer(c.conn, "Unauthorised access\n")
 		return
 	}
 
@@ -162,7 +162,7 @@ func (c *client) receiveUploadedFile(command *Structure.Command) {
 	//Write the byte array to the temp file
 	tempFile.Write([]byte(decoded))
 
-	Helper.SendToHTTPServer(c.conn, "true")
+	Helper.SendToHTTPServer(c.conn, "true\n")
 	return
 }
 
@@ -172,17 +172,17 @@ func (c *client) changePassword(command *Structure.Command) {
 	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
 	username, err := Redis.FetchAuth(tokenAuthMap)
 	if err != nil {
-		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
+		Helper.SendToHTTPServer(c.conn, "Unauthorised access\n")
 		return
 	}
 	//Hash the password before storing into the database
 	hashed, _ := Helper.HashPassword(password)
 	updated, err := MySQL.UpdatePassword(hashed, username)
 	if !updated {
-		Helper.SendToHTTPServer(c.conn, "false")
+		Helper.SendToHTTPServer(c.conn, "false\n")
 		return
 	}
-	Helper.SendToHTTPServer(c.conn, "true")
+	Helper.SendToHTTPServer(c.conn, "true\n")
 	return
 }
 
@@ -192,15 +192,15 @@ func (c *client) updateProfile(command *Structure.Command) {
 	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
 	username, err := Redis.FetchAuth(tokenAuthMap)
 	if err != nil {
-		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
+		Helper.SendToHTTPServer(c.conn, "Unauthorised access\n")
 		return
 	}
 	updated, err := MySQL.UpdateProfile(username, name)
 	if !updated {
-		Helper.SendToHTTPServer(c.conn, "false")
+		Helper.SendToHTTPServer(c.conn, "false\n")
 		return
 	}
-	Helper.SendToHTTPServer(c.conn, "true")
+	Helper.SendToHTTPServer(c.conn, "true\n")
 	return
 }
 
@@ -209,10 +209,10 @@ func (c *client) logout(command *Structure.Command) {
 	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
 	deleted, delErr := Redis.DeleteAuth(tokenAuthMap["AccessUUID"])
 	if delErr != nil || deleted == 0 { //if anything goes wrong
-		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
+		Helper.SendToHTTPServer(c.conn, "Unauthorised access\n")
 		return
 	}
-	Helper.SendToHTTPServer(c.conn, "Logged out!")
+	Helper.SendToHTTPServer(c.conn, "true\n")
 	return
 }
 
@@ -222,7 +222,7 @@ func (c *client) showProfile(command *Structure.Command) {
 
 	username, err := Redis.FetchAuth(tokenAuthMap)
 	if err != nil {
-		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
+		Helper.SendToHTTPServer(c.conn, "Unauthorised access\n")
 		return
 	}
 	//Function to display the profile of the user from the database
@@ -230,7 +230,7 @@ func (c *client) showProfile(command *Structure.Command) {
 	profileMap := Helper.ConvertStructToMap(profile)
 
 	out, _ := json.Marshal(profileMap)
-	Helper.SendToHTTPServer(c.conn, string(out))
+	Helper.SendToHTTPServer(c.conn, string(out)+"\n")
 	return
 }
 
@@ -248,7 +248,7 @@ func (c *client) login(command *Structure.Command) {
 				"access_token": "Invalid Credentials",
 			}
 			out, _ := json.Marshal(tokens)
-			Helper.SendToHTTPServer(c.conn, string(out))
+			Helper.SendToHTTPServer(c.conn, string(out)+"\n")
 			return
 		}
 		//Data prepared for sending to HTTP server
@@ -257,14 +257,14 @@ func (c *client) login(command *Structure.Command) {
 		}
 		out, _ := json.Marshal(tokens)
 		//Data sent to HTTP server
-		Helper.SendToHTTPServer(c.conn, string(out))
+		Helper.SendToHTTPServer(c.conn, string(out)+"\n")
 		return
 	} else {
 		tokens := map[string]string{
 			"access_token": "Invalid Credentials",
 		}
 		out, _ := json.Marshal(tokens)
-		Helper.SendToHTTPServer(c.conn, string(out))
+		Helper.SendToHTTPServer(c.conn, string(out)+"\n")
 		return
 	}
 }
