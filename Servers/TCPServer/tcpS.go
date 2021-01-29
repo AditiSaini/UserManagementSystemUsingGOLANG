@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"log"
 	"net"
+
+	Constants "servers/internal"
 )
 
 func main() {
-	ln, err := net.Listen("tcp", ":8081")
+	ln, err := net.Listen(Constants.NETWORK, ":"+Constants.TCP_PORT)
 	if err != nil {
 		log.Printf("%v", err)
 	}

@@ -9,6 +9,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	Structure "servers/TCPServer/Structure"
+	Constants "servers/internal"
 )
 
 func ValidateLogin(username string, password string) bool {
@@ -37,6 +38,6 @@ func CreateToken(username string) (*Structure.TokenDetails, error) {
 		"username":    username,
 		"exp":         td.AtExpires,
 	})
-	td.AccessToken, _ = token.SignedString([]byte("secret"))
+	td.AccessToken, _ = token.SignedString([]byte(Constants.TOKEN_SECRET))
 	return td, nil
 }

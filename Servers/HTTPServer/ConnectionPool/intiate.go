@@ -4,13 +4,16 @@ import (
 	"fmt"
 	"net"
 	"time"
+
+	Constants "servers/internal"
 )
 
 var (
-	Host                = "127.0.0.1"
-	Port                = "8081"
-	MIN_NUM_CONNECTIONS = 10
-	MAX_NUM_CONNECTIONS = 100
+	Network             = Constants.NETWORK
+	Host                = Constants.HOST
+	Port                = Constants.TCP_PORT
+	MIN_NUM_CONNECTIONS = Constants.MIN_NUM_CONNECTIONS
+	MAX_NUM_CONNECTIONS = Constants.MAX_NUM_CONNECTIONS
 )
 
 func ConnectToTCPServer(pool *GncpPool) (net.Conn, error) {
@@ -30,15 +33,15 @@ func CloseTCPConnection(conn net.Conn, pool *GncpPool) {
 	err := conn.Close()
 	if err != nil {
 		fmt.Println(err)
-		return
+		err = pool.Remove(conn)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 	}
-	err = pool.Remove(conn)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	return
 }
 
 func ConnCreator() (net.Conn, error) {
-	return net.Dial("tcp", Host+":"+Port)
+	return net.Dial(Network, Host+":"+Port)
 }

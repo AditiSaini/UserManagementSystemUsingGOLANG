@@ -7,13 +7,14 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 
 	Structure "servers/TCPServer/Structure"
+	Constants "servers/internal"
 )
 
 func dbConn() (db *sql.DB) {
-	dbDriver := "mysql"
-	dbUser := "root"
-	dbPass := ""
-	dbName := "users"
+	dbDriver := Constants.DB_DRIVER
+	dbUser := Constants.DB_USER
+	dbPass := Constants.DB_PASS
+	dbName := Constants.DB_NAME
 	db, err := sql.Open(dbDriver, dbUser+":"+dbPass+"@/"+dbName)
 	if err != nil {
 		panic(err.Error())

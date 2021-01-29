@@ -1,22 +1,19 @@
 package helper
 
 import (
-	"os"
 	"time"
 
 	"github.com/go-redis/redis"
 
 	Structure "servers/TCPServer/Structure"
+	Constants "servers/internal"
 )
 
 var client *redis.Client
 
 func init() {
 	//Initializing redis
-	dsn := os.Getenv("REDIS_DSN")
-	if len(dsn) == 0 {
-		dsn = "localhost:6379"
-	}
+	dsn := Constants.REDIS_DSN
 	client = redis.NewClient(&redis.Options{
 		Addr: dsn, //redis port
 	})
