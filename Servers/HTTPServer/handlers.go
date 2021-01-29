@@ -24,9 +24,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//Connecting to the tcp server
-	if pool == nil {
-		pool, _ = Connection.NewPool(Connection.MIN_NUM_CONNECTIONS, Connection.MAX_NUM_CONNECTIONS, Connection.ConnCreator)
-	}
+	pool, _ = Connection.InitialisePoolValue(pool)
 	c, err := Connection.ConnectToTCPServer(pool)
 	if err != nil {
 		http.Error(w, "Internal Server Error", 500)

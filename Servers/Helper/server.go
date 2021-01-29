@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"net"
+
 	Connection "servers/ConnectionPool"
 )
 
@@ -19,7 +20,11 @@ func GetResponseFromTCPServer(command string, c net.Conn, pool *Connection.GncpP
 	fmt.Fprintf(c, text+"\n")
 
 	//Receiving message from the TCP server
-	message, _ := bufio.NewReader(c).ReadString('\n')
+	message, err := bufio.NewReader(c).ReadString('\n')
+	if err != nil {
+		fmt.Println("Error from the tcp server")
+		fmt.Println(err)
+	}
 	Connection.CloseTCPConnection(c, pool)
 	return message
 }

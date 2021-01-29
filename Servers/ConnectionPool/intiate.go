@@ -20,7 +20,7 @@ func ConnectToTCPServer(pool *GncpPool) (net.Conn, error) {
 	conn, err := pool.Get()
 	if err != nil {
 		fmt.Println("Establishing connection with timeout")
-		conn, err = pool.GetWithTimeout(time.Duration(5) * time.Second)
+		conn, err = pool.GetWithTimeout(time.Duration(1) * time.Second)
 		if err != nil {
 			fmt.Println(err)
 			return nil, err
@@ -44,4 +44,12 @@ func CloseTCPConnection(conn net.Conn, pool *GncpPool) {
 
 func ConnCreator() (net.Conn, error) {
 	return net.Dial(Network, Host+":"+Port)
+}
+
+func InitialisePoolValue(pool *GncpPool) (*GncpPool, error) {
+	if pool == nil {
+		fmt.Println("Initialised pool")
+		return NewPool(MIN_NUM_CONNECTIONS, MAX_NUM_CONNECTIONS, ConnCreator)
+	}
+	return pool, nil
 }
