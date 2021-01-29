@@ -1,4 +1,4 @@
-package helper
+package mysql
 
 import (
 	"database/sql"
@@ -6,7 +6,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 
-	Structure "servers/TCPServer/Structure"
+	Structure "servers/Structure"
 	Constants "servers/internal"
 )
 

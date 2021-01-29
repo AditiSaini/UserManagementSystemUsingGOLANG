@@ -13,8 +13,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	Helper "servers/TCPServer/Helper"
-	Structure "servers/TCPServer/Structure"
+	Auth "servers/Authentication"
+	Helper "servers/Helper"
+	MySQL "servers/MySQL"
+	Redis "servers/Redis"
+	Structure "servers/Structure"
 )
 
 var (
@@ -81,14 +84,14 @@ func (c *client) showUploadedFile(command *Structure.Command) {
 	fmt.Println("Sending uploaded file")
 	tokenAuth := command.Body["tokenAuth"]
 	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
-	username, err := Helper.FetchAuth(tokenAuthMap)
+	username, err := Redis.FetchAuth(tokenAuthMap)
 	if err != nil {
 		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
 		return
 	}
 
 	//Function to display the profile of the user from the database
-	profile := Helper.Show(username)
+	profile := MySQL.Show(username)
 	profileMap := Helper.ConvertStructToMap(profile)
 	//Read all the content of the uploaded file into a byte array
 	byteFile, err := ioutil.ReadFile(profileMap["ImageRef"])
@@ -107,7 +110,7 @@ func (c *client) receiveUploadedFile(command *Structure.Command) {
 	tokenAuth := command.Body["tokenAuth"]
 	encodedByteFile := command.Body["file"]
 	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
-	username, err := Helper.FetchAuth(tokenAuthMap)
+	username, err := Redis.FetchAuth(tokenAuthMap)
 	if err != nil {
 		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
 		return
@@ -141,7 +144,7 @@ func (c *client) receiveUploadedFile(command *Structure.Command) {
 
 	//Update the image ref in the db
 	finalName := tempFile.Name()
-	_, err = Helper.UpdateImageRef(finalName, username)
+	_, err = MySQL.UpdateImageRef(finalName, username)
 	if err != nil {
 		fmt.Println("Image was not added to the db:", err)
 		return
@@ -164,14 +167,14 @@ func (c *client) changePassword(command *Structure.Command) {
 	tokenAuth := command.Body["tokenAuth"]
 	password := command.Body["password"]
 	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
-	username, err := Helper.FetchAuth(tokenAuthMap)
+	username, err := Redis.FetchAuth(tokenAuthMap)
 	if err != nil {
 		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
 		return
 	}
 	//Hash the password before storing into the database
 	hashed, _ := Helper.HashPassword(password)
-	updated, err := Helper.UpdatePassword(hashed, username)
+	updated, err := MySQL.UpdatePassword(hashed, username)
 	if !updated {
 		Helper.SendToHTTPServer(c.conn, "false")
 		return
@@ -184,12 +187,12 @@ func (c *client) updateProfile(command *Structure.Command) {
 	tokenAuth := command.Body["tokenAuth"]
 	name := command.Body["name"]
 	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
-	username, err := Helper.FetchAuth(tokenAuthMap)
+	username, err := Redis.FetchAuth(tokenAuthMap)
 	if err != nil {
 		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
 		return
 	}
-	updated, err := Helper.UpdateProfile(username, name)
+	updated, err := MySQL.UpdateProfile(username, name)
 	if !updated {
 		Helper.SendToHTTPServer(c.conn, "false")
 		return
@@ -201,7 +204,7 @@ func (c *client) updateProfile(command *Structure.Command) {
 func (c *client) logout(command *Structure.Command) {
 	tokenAuth := command.Body["tokenAuth"]
 	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
-	deleted, delErr := Helper.DeleteAuth(tokenAuthMap["AccessUUID"])
+	deleted, delErr := Redis.DeleteAuth(tokenAuthMap["AccessUUID"])
 	if delErr != nil || deleted == 0 { //if anything goes wrong
 		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
 		return
@@ -214,13 +217,13 @@ func (c *client) showProfile(command *Structure.Command) {
 	tokenAuth := command.Body["tokenAuth"]
 	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
 
-	username, err := Helper.FetchAuth(tokenAuthMap)
+	username, err := Redis.FetchAuth(tokenAuthMap)
 	if err != nil {
 		Helper.SendToHTTPServer(c.conn, "Unauthorised access")
 		return
 	}
 	//Function to display the profile of the user from the database
-	profile := Helper.Show(username)
+	profile := MySQL.Show(username)
 	profileMap := Helper.ConvertStructToMap(profile)
 
 	out, _ := json.Marshal(profileMap)
@@ -230,13 +233,13 @@ func (c *client) showProfile(command *Structure.Command) {
 
 func (c *client) login(command *Structure.Command) {
 	//Checking the validity of the credentials
-	check := Helper.ValidateLogin(command.Body["username"], command.Body["password"])
+	check := Auth.ValidateLogin(command.Body["username"], command.Body["password"])
 	//If user is authenticated, get a bearer token and return it to the HTTP Server
 	if check == true {
 		//Token is created for auth
-		token, _ := Helper.CreateToken(command.Body["username"])
+		token, _ := Auth.CreateToken(command.Body["username"])
 		//User is saved in redis
-		saveErr := Helper.CreateAuth(command.Body["username"], token)
+		saveErr := Redis.CreateAuth(command.Body["username"], token)
 		if saveErr != nil {
 			tokens := map[string]string{
 				"access_token": "Invalid Credentials",

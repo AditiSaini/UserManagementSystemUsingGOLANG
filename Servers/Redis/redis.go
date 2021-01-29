@@ -1,11 +1,11 @@
-package helper
+package redis
 
 import (
 	"time"
 
 	"github.com/go-redis/redis"
 
-	Structure "servers/TCPServer/Structure"
+	Structure "servers/Structure"
 	Constants "servers/internal"
 )
 

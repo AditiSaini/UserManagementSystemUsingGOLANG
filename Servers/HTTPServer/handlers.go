@@ -7,9 +7,10 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	Connection "servers/HTTPServer/ConnectionPool"
-	Helper "servers/HTTPServer/Helper"
-	Structure "servers/HTTPServer/Structure"
+	Auth "servers/Authentication"
+	Connection "servers/ConnectionPool"
+	Helper "servers/Helper"
+	Structure "servers/Structure"
 )
 
 var (
@@ -89,7 +90,7 @@ func logoutUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
-	tokenAuth, err := Helper.ExtractTokenMetadata(r)
+	tokenAuth, err := Auth.ExtractTokenMetadata(r)
 	if err != nil {
 		fmt.Println(err)
 		m["profile"] = "Unauthorised Access"
@@ -124,7 +125,7 @@ func showProfile(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
-	tokenAuth, err := Helper.ExtractTokenMetadata(r)
+	tokenAuth, err := Auth.ExtractTokenMetadata(r)
 	if err != nil {
 		fmt.Println(err)
 		m["profile"] = "Unauthorised Access"
@@ -158,7 +159,7 @@ func updateProfile(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
-	tokenAuth, err := Helper.ExtractTokenMetadata(r)
+	tokenAuth, err := Auth.ExtractTokenMetadata(r)
 	if err != nil {
 		fmt.Println(err)
 		m["profile"] = "Unauthorised Access"
@@ -203,7 +204,7 @@ func changePassword(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
-	tokenAuth, err := Helper.ExtractTokenMetadata(r)
+	tokenAuth, err := Auth.ExtractTokenMetadata(r)
 	if err != nil {
 		fmt.Println(err)
 		m["profile"] = "Unauthorised Access"
@@ -247,7 +248,7 @@ func showPicture(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
-	tokenAuth, err := Helper.ExtractTokenMetadata(r)
+	tokenAuth, err := Auth.ExtractTokenMetadata(r)
 	if err != nil {
 		fmt.Println(err)
 		m["profile"] = "Unauthorised Access"
@@ -291,7 +292,7 @@ func uploadPicture(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
-	tokenAuth, err := Helper.ExtractTokenMetadata(r)
+	tokenAuth, err := Auth.ExtractTokenMetadata(r)
 	if err != nil {
 		fmt.Println(err)
 		m["profile"] = "Unauthorised Access"
