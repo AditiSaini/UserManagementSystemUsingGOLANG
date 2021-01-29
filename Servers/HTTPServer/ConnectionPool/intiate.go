@@ -30,13 +30,13 @@ func CloseTCPConnection(conn net.Conn, pool *GncpPool) {
 	err := conn.Close()
 	if err != nil {
 		fmt.Println(err)
-		return
+		err = pool.Remove(conn)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 	}
-	err = pool.Remove(conn)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	return
 }
 
 func ConnCreator() (net.Conn, error) {
