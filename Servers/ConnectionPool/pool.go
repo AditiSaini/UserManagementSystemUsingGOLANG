@@ -30,8 +30,11 @@ type GncpPool struct {
 var (
 	errPoolIsClose = errors.New("Connection pool has been closed")
 	// Error for get connection time out.
-	errTimeOut      = errors.New("Get Connection timeout")
-	errContextClose = errors.New("Get Connection close by context")
+	errTimeOut             = errors.New("Get Connection timeout")
+	errContextClose        = errors.New("Get Connection close by context")
+	errCantPutNilToConn    = errors.New("Cannot put nil to connection pool")
+	errMaxLimitReachedConn = fmt.Errorf("Cannot establish connection because max limit")
+	errConnNumBoundErr     = errors.New("Number of connection bound error")
 )
 
 // NewPool return new ConnPool. It base on channel. It will init minConn connections in channel first.
@@ -40,7 +43,7 @@ var (
 // it use connCreator function to create new connection.
 func NewPool(minConn, maxConn int, connCreator func() (net.Conn, error)) (*GncpPool, error) {
 	if minConn > maxConn || minConn < 0 || maxConn <= 0 {
-		return nil, errors.New("Number of connection bound error")
+		return nil, errConnNumBoundErr
 	}
 
 	pool := &GncpPool{}
@@ -87,7 +90,7 @@ func (p *GncpPool) Get() (net.Conn, error) {
 	case conn := <-p.conns:
 		return p.packConn(conn), nil
 	default:
-		return nil, fmt.Errorf("Cannot establish connection because max limit")
+		return nil, errMaxLimitReachedConn
 	}
 
 }
@@ -157,7 +160,7 @@ func (p *GncpPool) Put(conn net.Conn) error {
 		p.lock.Lock()
 		p.totalConnNum = p.totalConnNum - 1
 		p.lock.Unlock()
-		return errors.New("Cannot put nil to connection pool.")
+		return errCantPutNilToConn
 	}
 
 	select {
