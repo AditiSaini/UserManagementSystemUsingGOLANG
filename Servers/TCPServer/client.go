@@ -118,25 +118,28 @@ func (c *client) receiveUploadedFile(command *Structure.Command) {
 
 	//Delete all the other files with the same username
 	var files []string
-	root := "./Pictures"
+	root := "../Pictures"
 	err = filepath.Walk(root, Helper.Visit(&files))
 	if err != nil {
 		panic(err)
 	}
 	for _, file := range files {
-		fileName := strings.Split(file, "/")[1]
-		name := strings.Split(fileName, "-")[0]
-		if name == username {
-			e := os.Remove(file)
-			if e != nil {
-				log.Fatal(e)
+		list := strings.Split(file, "/")
+		if len(list) > 2 {
+			fileName := strings.Split(file, "/")[2]
+			name := strings.Split(fileName, "-")[0]
+			if name == username {
+				e := os.Remove(file)
+				if e != nil {
+					log.Fatal(e)
+				}
 			}
 		}
 	}
 
 	//Create a temp file
 	name := username + "-*.png"
-	tempFile, err := ioutil.TempFile("Pictures", name)
+	tempFile, err := ioutil.TempFile("../Pictures", name)
 	if err != nil {
 		fmt.Println(err)
 	}
