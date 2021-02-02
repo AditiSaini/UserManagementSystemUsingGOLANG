@@ -3,9 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
-	"math/rand"
 	"net"
-	"time"
 
 	Constants "servers/internal"
 )
@@ -15,8 +13,6 @@ func main() {
 	if err != nil {
 		log.Printf("%v", err)
 	}
-	defer ln.Close()
-	rand.Seed(time.Now().Unix())
 
 	for {
 		conn, err := ln.Accept()

@@ -102,7 +102,7 @@ func (c *client) showUploadedFile(command *Structure.Command) {
 		Helper.SendToHTTPServer(c.conn, "false\n")
 		return
 	}
-	Helper.SendToHTTPServer(c.conn, fileBase64)
+	Helper.SendToHTTPServer(c.conn, fileBase64+"\n")
 	return
 }
 
