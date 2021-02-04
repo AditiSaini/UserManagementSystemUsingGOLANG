@@ -2,7 +2,10 @@ package helper
 
 import (
 	"encoding/json"
+	"log"
 	"net"
+	"os"
+	"path/filepath"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -36,4 +39,14 @@ func ConvertStructToMap(profile Structure.Profile) map[string]string {
 	m["Nickname"] = profile.Nickname
 	m["ProfilePicture"] = profile.ProfilePicture
 	return m
+}
+
+func Visit(files *[]string) filepath.WalkFunc {
+	return func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			log.Fatal(err)
+		}
+		*files = append(*files, path)
+		return nil
+	}
 }

@@ -6,7 +6,7 @@ import (
 
 func ExtractingArgumentsFromCommands(instruction string, args string) map[string]string {
 	m := make(map[string]string)
-	possibleInstruction := []string{"LOGIN", "LOGOUT", "SHOW_PROFILE", "UPDATE_PROFILE", "UPLOAD_PICTURE", "CHANGE_PASSWORD"}
+	possibleInstruction := []string{"LOGIN", "LOGOUT", "SHOW_PROFILE", "UPDATE_PROFILE", "UPLOAD_PICTURE", "CHANGE_PASSWORD", "SHOW_PICTURE"}
 	_, found := Find(possibleInstruction, instruction)
 
 	if !found {
