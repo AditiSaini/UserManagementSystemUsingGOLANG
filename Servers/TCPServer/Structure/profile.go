@@ -5,5 +5,6 @@ type Profile struct {
 	Username string
 	Nickname string
 	Password []byte
+	ImageRef string
 	Valid    bool
 }

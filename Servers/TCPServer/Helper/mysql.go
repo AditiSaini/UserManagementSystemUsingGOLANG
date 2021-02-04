@@ -33,7 +33,8 @@ func Show(username string) Structure.Profile {
 		var username string
 		var nickname string
 		var password []byte
-		err = selDB.Scan(&id, &username, &nickname, &password)
+		var picture sql.NullString
+		err = selDB.Scan(&id, &username, &nickname, &password, &picture)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -41,6 +42,11 @@ func Show(username string) Structure.Profile {
 		profile.Username = username
 		profile.Nickname = nickname
 		profile.Password = password
+		if picture.Valid {
+			profile.ImageRef = picture.String
+		} else {
+			profile.ImageRef = ""
+		}
 		profile.Valid = true
 	}
 	defer db.Close()
@@ -66,6 +72,18 @@ func UpdatePassword(password []byte, username string) (bool, error) {
 	}
 	insForm.Exec(password, username)
 	log.Println("UPDATED: Password of user: " + username)
+	defer db.Close()
+	return true, nil
+}
+
+func UpdateImageRef(imageRef string, username string) (bool, error) {
+	db := dbConn()
+	insForm, err := db.Prepare("UPDATE Profile SET ImageRef=? WHERE Nickname=?")
+	if err != nil {
+		return false, err
+	}
+	insForm.Exec(imageRef, username)
+	log.Println("UPDATED: image ref of user: " + username)
 	defer db.Close()
 	return true, nil
 }
