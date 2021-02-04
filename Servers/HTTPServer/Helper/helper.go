@@ -5,30 +5,32 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+
+	Connection "../ConnectionPool"
 )
 
 //TCP Communication functions
-func ConnectToTCPServer() net.Conn {
-	CONNECT := ":8081"
-	c, err := net.Dial("tcp", CONNECT)
-	if err != nil {
-		fmt.Println(err)
-	}
-	return c
-}
+// func ConnectToTCPServer() net.Conn {
+// 	CONNECT := ":8081"
+// 	c, err := net.Dial("tcp", CONNECT)
+// 	if err != nil {
+// 		fmt.Println(err)
+// 	}
+// 	return c
+// }
 
-func CloseTCPConnection(conn net.Conn) {
-	conn.Close()
-}
+// func CloseTCPConnection(conn net.Conn) {
+// 	conn.Close()
+// }
 
-func GetResponseFromTCPServer(command string, c net.Conn) string {
+func GetResponseFromTCPServer(command string, c net.Conn, pool *Connection.GncpPool) string {
 	//Text is the command to be sent to the TCP server
 	text := command
 	fmt.Fprintf(c, text+"\n")
 
 	//Receiving message from the TCP server
 	message, _ := bufio.NewReader(c).ReadString('\n')
-	CloseTCPConnection(c)
+	Connection.CloseTCPConnection(c, pool)
 	return message
 }
 
