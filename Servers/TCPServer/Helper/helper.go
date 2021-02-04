@@ -9,7 +9,7 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	Structure "../Structure"
+	Structure "servers/TCPServer/Structure"
 )
 
 func SendToHTTPServer(conn net.Conn, response string) {
@@ -37,7 +37,6 @@ func ConvertStructToMap(profile Structure.Profile) map[string]string {
 	m := make(map[string]string)
 	m["Username"] = profile.Username
 	m["Nickname"] = profile.Nickname
-	m["ProfilePicture"] = profile.ProfilePicture
 	return m
 }
 

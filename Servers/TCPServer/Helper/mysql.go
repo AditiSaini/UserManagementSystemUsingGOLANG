@@ -6,7 +6,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 
-	Structure "../Structure"
+	Structure "servers/TCPServer/Structure"
 )
 
 func dbConn() (db *sql.DB) {
@@ -32,21 +32,14 @@ func Show(username string) Structure.Profile {
 		var id int64
 		var username string
 		var nickname string
-		var password string
-		var picture sql.NullString
-		err = selDB.Scan(&id, &username, &nickname, &password, &picture)
+		var password []byte
+		err = selDB.Scan(&id, &username, &nickname, &password)
 		if err != nil {
 			panic(err.Error())
 		}
 		profile.ID = id
 		profile.Username = username
 		profile.Nickname = nickname
-		if picture.Valid {
-			profile.ProfilePicture = picture.String
-		} else {
-			profile.ProfilePicture = ""
-		}
-
 		profile.Password = password
 		profile.Valid = true
 	}
@@ -65,14 +58,14 @@ func UpdateProfile(username string, name string) (bool, error) {
 	return true, nil
 }
 
-func UpdatePassword(password string, username string) (bool, error) {
+func UpdatePassword(password []byte, username string) (bool, error) {
 	db := dbConn()
 	insForm, err := db.Prepare("UPDATE Profile SET Password=? WHERE Nickname=?")
 	if err != nil {
 		return false, err
 	}
 	insForm.Exec(password, username)
-	log.Println("UPDATE: Password: " + password + " of User: " + username)
+	log.Println("UPDATED: Password of user: " + username)
 	defer db.Close()
 	return true, nil
 }

@@ -8,15 +8,13 @@ import (
 	"github.com/twinj/uuid"
 	"golang.org/x/crypto/bcrypt"
 
-	Structure "../Structure"
+	Structure "servers/TCPServer/Structure"
 )
 
 func ValidateLogin(username string, password string) bool {
 	profile := Show(username)
 	if profile.Valid {
-		//>>>>>>>Need to be modified since hash is stored in the db and not plain text<<<<<<<<
-		hashed, _ := HashPassword(password)
-		err := bcrypt.CompareHashAndPassword(hashed, []byte(profile.Password))
+		err := bcrypt.CompareHashAndPassword(profile.Password, []byte(password))
 		if err != nil {
 			log.Println(err)
 			return false
