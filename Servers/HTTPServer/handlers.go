@@ -59,9 +59,8 @@ func loginUser(w http.ResponseWriter, r *http.Request) {
 	password := user.Password
 
 	command := "LOGIN username " + username + "|password " + password
-	if pool == nil {
-		pool, _ = Connection.NewPool(Connection.MIN_NUM_CONNECTIONS, Connection.MAX_NUM_CONNECTIONS, Connection.ConnCreator)
-	}
+	//Connecting to the tcp server
+	pool, _ = Connection.InitialisePoolValue(pool)
 	c, err := Connection.ConnectToTCPServer(pool)
 	if err != nil {
 		http.Error(w, "Internal Server Error", 500)
@@ -94,9 +93,8 @@ func logoutUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	m := make(map[string]string)
-	if pool == nil {
-		pool, _ = Connection.NewPool(Connection.MIN_NUM_CONNECTIONS, Connection.MAX_NUM_CONNECTIONS, Connection.ConnCreator)
-	}
+	//Connecting to the tcp server
+	pool, _ = Connection.InitialisePoolValue(pool)
 	c, err := Connection.ConnectToTCPServer(pool)
 	if err != nil {
 		http.Error(w, "Internal Server Error", 500)
@@ -134,9 +132,8 @@ func showProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	m := make(map[string]string)
-	if pool == nil {
-		pool, _ = Connection.NewPool(Connection.MIN_NUM_CONNECTIONS, Connection.MAX_NUM_CONNECTIONS, Connection.ConnCreator)
-	}
+	//Connecting to the tcp server
+	pool, _ = Connection.InitialisePoolValue(pool)
 	c, err := Connection.ConnectToTCPServer(pool)
 	if err != nil {
 		http.Error(w, "Internal Server Error", 500)
@@ -173,9 +170,8 @@ func updateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	m := make(map[string]string)
-	if pool == nil {
-		pool, _ = Connection.NewPool(Connection.MIN_NUM_CONNECTIONS, Connection.MAX_NUM_CONNECTIONS, Connection.ConnCreator)
-	}
+	//Connecting to the tcp server
+	pool, _ = Connection.InitialisePoolValue(pool)
 	c, err := Connection.ConnectToTCPServer(pool)
 	if err != nil {
 		http.Error(w, "Internal Server Error", 500)
@@ -223,9 +219,8 @@ func changePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	m := make(map[string]string)
-	if pool == nil {
-		pool, _ = Connection.NewPool(Connection.MIN_NUM_CONNECTIONS, Connection.MAX_NUM_CONNECTIONS, Connection.ConnCreator)
-	}
+	//Connecting to the tcp server
+	pool, _ = Connection.InitialisePoolValue(pool)
 	c, err := Connection.ConnectToTCPServer(pool)
 	if err != nil {
 		http.Error(w, "Internal Server Error", 500)
@@ -272,9 +267,8 @@ func showPicture(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	m := make(map[string]string)
-	if pool == nil {
-		pool, _ = Connection.NewPool(Connection.MIN_NUM_CONNECTIONS, Connection.MAX_NUM_CONNECTIONS, Connection.ConnCreator)
-	}
+	//Connecting to the tcp server
+	pool, _ = Connection.InitialisePoolValue(pool)
 	c, err := Connection.ConnectToTCPServer(pool)
 	if err != nil {
 		http.Error(w, "Internal Server Error", 500)
@@ -321,9 +315,8 @@ func uploadPicture(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	m := make(map[string]string)
-	if pool == nil {
-		pool, _ = Connection.NewPool(Connection.MIN_NUM_CONNECTIONS, Connection.MAX_NUM_CONNECTIONS, Connection.ConnCreator)
-	}
+	//Connecting to the tcp server
+	pool, _ = Connection.InitialisePoolValue(pool)
 	c, err := Connection.ConnectToTCPServer(pool)
 	if err != nil {
 		http.Error(w, "Internal Server Error", 500)

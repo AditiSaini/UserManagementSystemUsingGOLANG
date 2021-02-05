@@ -73,6 +73,9 @@ func (p *GncpPool) init() error {
 // Get get connection from connection pool. If connection poll is empty and alreay created connection number less than Max number of connection
 // it will create new one. Otherwise it wil wait someone put connection back.
 func (p *GncpPool) Get() (net.Conn, error) {
+	fmt.Println("Total number of connection now: ")
+	fmt.Println(p.totalConnNum)
+
 	if p.isClosed() == true {
 		fmt.Println(errPoolIsClose)
 		return nil, errPoolIsClose

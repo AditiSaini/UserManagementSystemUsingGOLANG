@@ -32,6 +32,7 @@ func ConnectToTCPServer(pool *GncpPool) (net.Conn, error) {
 func CloseTCPConnection(conn net.Conn, pool *GncpPool) {
 	err := conn.Close()
 	if err != nil {
+		fmt.Println("The pool is getting removed")
 		fmt.Println(err)
 		err = pool.Remove(conn)
 		if err != nil {

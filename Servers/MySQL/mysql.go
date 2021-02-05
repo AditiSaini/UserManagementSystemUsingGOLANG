@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -17,7 +18,7 @@ func dbConn() (db *sql.DB) {
 	dbName := Constants.DB_NAME
 	db, err := sql.Open(dbDriver, dbUser+":"+dbPass+"@/"+dbName)
 	if err != nil {
-		panic(err.Error())
+		fmt.Println(err)
 	}
 	return db
 }
@@ -26,7 +27,7 @@ func Show(username string) Structure.Profile {
 	db := dbConn()
 	selDB, err := db.Query("SELECT * FROM Profile WHERE Nickname=?", username)
 	if err != nil {
-		panic(err.Error())
+		fmt.Println(err)
 	}
 	profile := Structure.Profile{}
 	for selDB.Next() {
@@ -37,7 +38,7 @@ func Show(username string) Structure.Profile {
 		var picture sql.NullString
 		err = selDB.Scan(&id, &username, &nickname, &password, &picture)
 		if err != nil {
-			panic(err.Error())
+			fmt.Println(err)
 		}
 		profile.ID = id
 		profile.Username = username

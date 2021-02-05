@@ -6,7 +6,7 @@ const (
 	HOST                = "127.0.0.1"
 	TCP_PORT            = "8081"
 	MIN_NUM_CONNECTIONS = 10
-	MAX_NUM_CONNECTIONS = 100
+	MAX_NUM_CONNECTIONS = 5000
 	NETWORK             = "tcp"
 
 	//2. Helper (In both http and tcp server)
