@@ -37,7 +37,7 @@ class InfoPage extends React.Component {
                 body: JSON.stringify({ "name": username })
             };
             fetch(url, requestOptions)
-                .then(data => data.json())
+                .then(data => { this.props.history.push("/profile") })
                 .catch((error) => {
                     console.error('Error:', error);
                 });
@@ -50,12 +50,11 @@ class InfoPage extends React.Component {
                 body: JSON.stringify({ "password": password })
             };
             fetch(url, requestOptions)
-                .then(data => data.json())
+                .then(data => { this.props.history.push("/profile") })
                 .catch((error) => {
                     console.error('Error:', error);
                 });
         }
-        this.props.history.push("/profile")
     }
 
     render() {

@@ -9,10 +9,6 @@ import { createBrowserHistory } from 'history';
 
 
 function App() {
-  // const [token, setToken] = useState();
-  // if (!token) {
-  //   return <Login setToken={setToken} />
-  // }
   const history = createBrowserHistory();
 
   return (

@@ -5,11 +5,11 @@ import { withRouter } from "react-router-dom";
 class ProfilePage extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { username: undefined, fullname: undefined, token: undefined, pic: "https://picsum.photos/id/237/200/300" }
+        this.state = { username: "Loading...", fullname: "Loading...", token: undefined, pic: "https://picsum.photos/id/1005/500" }
         this.handleLogout = this.handleLogout.bind(this);
     }
 
-    componentDidMount() {
+    getInfo() {
         const token = localStorage.token;
         if (token) {
             //1. Get the profile data of the user
@@ -37,6 +37,10 @@ class ProfilePage extends React.Component {
             })
                 .then(resp => resp.blob()).then(data => { this.setState({ pic: URL.createObjectURL(data) }) })
         }
+    }
+
+    componentDidMount() {
+        this.getInfo()
     }
 
     handleLogout() {
