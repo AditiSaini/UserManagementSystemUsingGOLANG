@@ -66,7 +66,7 @@ func UpdateUserProfile(profile *Structure.Profile) (bool, error) {
 		return false, err
 	}
 	insForm.Exec(name, password, imageRef, nickname)
-	log.Println("UPDATED: Password of user: " + nickname)
+	log.Println("UPDATED: Profile of user: " + nickname)
 	defer db.Close()
 	return true, nil
 }

@@ -153,12 +153,6 @@ func (c *client) receiveUploadedFile(command *Structure.Command) {
 		Helper.SendToHTTPServer(c.conn, "false\n")
 		return
 	}
-	//Update the image ref in db
-	// _, err = MySQL.UpdateImageRef(finalName, username)
-	// if err != nil {
-	// 	fmt.Println("Image was not added to the db:", err)
-	// 	return
-	// }
 
 	decoded, err := base64.StdEncoding.DecodeString(encodedByteFile)
 	if err != nil {
@@ -183,7 +177,6 @@ func (c *client) changePassword(command *Structure.Command) {
 		return
 	}
 
-	// username := profile.Nickname
 	//Hash the password before storing into the database
 	hashed, _ := Helper.HashPassword(password)
 	profile.Password = hashed
@@ -193,11 +186,6 @@ func (c *client) changePassword(command *Structure.Command) {
 		Helper.SendToHTTPServer(c.conn, "false\n")
 		return
 	}
-	// updated, err := MySQL.UpdatePassword(hashed, username)
-	// if !updated {
-	// 	Helper.SendToHTTPServer(c.conn, "false\n")
-	// 	return
-	// }
 	Helper.SendToHTTPServer(c.conn, "true\n")
 	return
 }
@@ -218,12 +206,6 @@ func (c *client) updateProfile(command *Structure.Command) {
 		Helper.SendToHTTPServer(c.conn, "false\n")
 		return
 	}
-	// username := profile.Nickname
-	// updated, err := MySQL.UpdateProfile(username, name)
-	// if !updated {
-	// 	Helper.SendToHTTPServer(c.conn, "false\n")
-	// 	return
-	// }
 	Helper.SendToHTTPServer(c.conn, "true\n")
 	return
 }
@@ -255,6 +237,7 @@ func (c *client) logout(command *Structure.Command) {
 }
 
 func (c *client) showProfile(command *Structure.Command) {
+	fmt.Println(command.Body["tokenAuth"])
 	tokenAuth := command.Body["tokenAuth"]
 	tokenAuthMap, _ := Helper.ConvertStringToMap(tokenAuth)
 
@@ -264,7 +247,6 @@ func (c *client) showProfile(command *Structure.Command) {
 		return
 	}
 	//Function to display the profile of the user from the database
-	// profile := MySQL.Show(username)
 	profileMap := Helper.ConvertStructToMap(profile)
 	out, _ := json.Marshal(profileMap)
 	Helper.SendToHTTPServer(c.conn, string(out)+"\n")
