@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -23,13 +24,26 @@ func init() {
 	}
 }
 
+//Updates user info in cache
+func UpdateUserProfile(profile *Structure.Profile, authD map[string]string) error {
+	at := time.Unix(time.Now().Add(time.Minute*30).Unix(), 0)
+	now := time.Now()
+	serialized, _ := json.Marshal(profile)
+	errAccess := client.Set(authD["AccessUUID"], serialized, at.Sub(now)).Err()
+	if errAccess != nil {
+		return errAccess
+	}
+	return nil
+}
+
 //Adds the user's token into the redis key value pair
-func CreateAuth(username string, td *Structure.TokenDetails) error {
+func CreateAuth(profile *Structure.Profile, td *Structure.TokenDetails) error {
 	at := time.Unix(td.AtExpires, 0) //converting Unix to UTC(to Time object)
 	now := time.Now()
 	// context := client.Context()
-
-	errAccess := client.Set(td.AccessUuid, username, at.Sub(now)).Err()
+	// retain readability with json
+	serialized, _ := json.Marshal(profile)
+	errAccess := client.Set(td.AccessUuid, serialized, at.Sub(now)).Err()
 	if errAccess != nil {
 		return errAccess
 	}
@@ -37,12 +51,14 @@ func CreateAuth(username string, td *Structure.TokenDetails) error {
 }
 
 //Fetches auth information from redis (if not found, token may have been expired)
-func FetchAuth(authD map[string]string) (string, error) {
-	username, err := client.Get(authD["AccessUUID"]).Result()
+func FetchAuth(authD map[string]string) (*Structure.Profile, error) {
+	profile, err := client.Get(authD["AccessUUID"]).Result()
+	var deserialized Structure.Profile
+	err = json.Unmarshal([]byte(profile), &deserialized)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return username, nil
+	return &deserialized, nil
 }
 
 //The function deletes the record in redis that corresponds with the uuid passed as a parameter

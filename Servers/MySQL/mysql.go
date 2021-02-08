@@ -55,6 +55,22 @@ func Show(username string) Structure.Profile {
 	return profile
 }
 
+func UpdateUserProfile(profile *Structure.Profile) (bool, error) {
+	name := profile.Username
+	nickname := profile.Nickname
+	password := profile.Password
+	imageRef := profile.ImageRef
+	db := dbConn()
+	insForm, err := db.Prepare("UPDATE Profile SET Name=?, Password=?, ImageRef=? WHERE Nickname=?")
+	if err != nil {
+		return false, err
+	}
+	insForm.Exec(name, password, imageRef, nickname)
+	log.Println("UPDATED: Password of user: " + nickname)
+	defer db.Close()
+	return true, nil
+}
+
 func UpdateProfile(username string, name string) (bool, error) {
 	db := dbConn()
 	insForm, err := db.Prepare("UPDATE Profile SET Name=? WHERE Nickname=?")

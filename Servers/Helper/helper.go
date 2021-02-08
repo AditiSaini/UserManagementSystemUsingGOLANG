@@ -27,7 +27,7 @@ func HashPassword(password string) ([]byte, error) {
 	return bytes, err
 }
 
-func ConvertStructToMap(profile Structure.Profile) map[string]string {
+func ConvertStructToMap(profile *Structure.Profile) map[string]string {
 	m := make(map[string]string)
 	m["Username"] = profile.Username
 	m["Nickname"] = profile.Nickname

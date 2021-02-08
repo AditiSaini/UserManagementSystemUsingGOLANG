@@ -1,6 +1,7 @@
 package authentication
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -76,17 +77,17 @@ func TokenValid(r *http.Request) error {
 	return nil
 }
 
-func ValidateLogin(username string, password string) bool {
+func ValidateLogin(username string, password string) (*Structure.Profile, error) {
 	profile := MySQL.Show(username)
 	if profile.Valid {
 		err := bcrypt.CompareHashAndPassword(profile.Password, []byte(password))
 		if err != nil {
 			log.Println(err)
-			return false
+			return nil, err
 		}
-		return true
+		return &profile, nil
 	}
-	return false
+	return nil, errors.New("Profile not found")
 }
 
 func CreateToken(username string) (*Structure.TokenDetails, error) {
