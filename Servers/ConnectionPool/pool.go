@@ -1,7 +1,6 @@
 package connectionPool
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -30,8 +29,11 @@ type GncpPool struct {
 var (
 	errPoolIsClose = errors.New("Connection pool has been closed")
 	// Error for get connection time out.
-	errTimeOut      = errors.New("Get Connection timeout")
-	errContextClose = errors.New("Get Connection close by context")
+	errTimeOut             = errors.New("Get Connection timeout")
+	errContextClose        = errors.New("Get Connection close by context")
+	errCantPutNilToConn    = errors.New("Cannot put nil to connection pool")
+	errMaxLimitReachedConn = fmt.Errorf("Cannot establish connection because max limit")
+	errConnNumBoundErr     = errors.New("Number of connection bound error")
 )
 
 // NewPool return new ConnPool. It base on channel. It will init minConn connections in channel first.
@@ -40,7 +42,7 @@ var (
 // it use connCreator function to create new connection.
 func NewPool(minConn, maxConn int, connCreator func() (net.Conn, error)) (*GncpPool, error) {
 	if minConn > maxConn || minConn < 0 || maxConn <= 0 {
-		return nil, errors.New("Number of connection bound error")
+		return nil, errConnNumBoundErr
 	}
 
 	pool := &GncpPool{}
@@ -71,6 +73,9 @@ func (p *GncpPool) init() error {
 // Get get connection from connection pool. If connection poll is empty and alreay created connection number less than Max number of connection
 // it will create new one. Otherwise it wil wait someone put connection back.
 func (p *GncpPool) Get() (net.Conn, error) {
+	fmt.Println("Total number of connection now: ")
+	fmt.Println(p.totalConnNum)
+
 	if p.isClosed() == true {
 		fmt.Println(errPoolIsClose)
 		return nil, errPoolIsClose
@@ -87,7 +92,7 @@ func (p *GncpPool) Get() (net.Conn, error) {
 	case conn := <-p.conns:
 		return p.packConn(conn), nil
 	default:
-		return nil, fmt.Errorf("Cannot establish connection because max limit")
+		return nil, errMaxLimitReachedConn
 	}
 
 }
@@ -110,25 +115,6 @@ func (p *GncpPool) GetWithTimeout(timeout time.Duration) (net.Conn, error) {
 		return p.packConn(conn), nil
 	case <-time.After(timeout):
 		return nil, errTimeOut
-	}
-}
-
-func (p *GncpPool) GetWithContext(ctx context.Context) (net.Conn, error) {
-	if p.isClosed() == true {
-		return nil, errPoolIsClose
-	}
-	go func() {
-		conn, err := p.createConn()
-		if err != nil {
-			return
-		}
-		p.conns <- conn
-	}()
-	select {
-	case conn := <-p.conns:
-		return p.packConn(conn), nil
-	case <-ctx.Done():
-		return nil, errContextClose
 	}
 }
 
@@ -157,7 +143,7 @@ func (p *GncpPool) Put(conn net.Conn) error {
 		p.lock.Lock()
 		p.totalConnNum = p.totalConnNum - 1
 		p.lock.Unlock()
-		return errors.New("Cannot put nil to connection pool.")
+		return errCantPutNilToConn
 	}
 
 	select {

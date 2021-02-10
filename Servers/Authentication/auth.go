@@ -1,13 +1,20 @@
-package helper
+package authentication
 
 import (
+	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/twinj/uuid"
+	"golang.org/x/crypto/bcrypt"
 
-	Structure "servers/HTTPServer/Structure"
+	MySQL "servers/MySQL"
+	Structure "servers/Structure"
+	Constants "servers/internal"
 )
 
 func ExtractToken(r *http.Request) string {
@@ -27,7 +34,7 @@ func VerifyToken(r *http.Request) (*jwt.Token, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte("secret"), nil
+		return []byte(Constants.TOKEN_SECRET), nil
 	})
 	if err != nil {
 		return nil, err
@@ -58,7 +65,7 @@ func ExtractTokenMetadata(r *http.Request) (*Structure.AccessDetails, error) {
 	return nil, err
 }
 
-//Check whether the token has expired
+// Check whether the token has expired
 func TokenValid(r *http.Request) error {
 	token, err := VerifyToken(r)
 	if err != nil {
@@ -68,4 +75,34 @@ func TokenValid(r *http.Request) error {
 		return err
 	}
 	return nil
+}
+
+func ValidateLogin(username string, password string) (*Structure.Profile, error) {
+	profile := MySQL.Show(username)
+	if profile.Valid {
+		err := bcrypt.CompareHashAndPassword(profile.Password, []byte(password))
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+		return &profile, nil
+	}
+	return nil, errors.New("Profile not found")
+}
+
+func CreateToken(username string) (*Structure.TokenDetails, error) {
+	td := &Structure.TokenDetails{}
+	td.AtExpires = time.Now().Add(time.Minute * 30).Unix()
+	td.AccessUuid = uuid.NewV4().String()
+	td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
+
+	//Craeting access token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"authorised":  true,
+		"access_uuid": td.AccessUuid,
+		"username":    username,
+		"exp":         td.AtExpires,
+	})
+	td.AccessToken, _ = token.SignedString([]byte(Constants.TOKEN_SECRET))
+	return td, nil
 }

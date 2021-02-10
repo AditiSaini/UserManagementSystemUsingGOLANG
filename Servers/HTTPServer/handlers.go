@@ -7,9 +7,10 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	Connection "servers/HTTPServer/ConnectionPool"
-	Helper "servers/HTTPServer/Helper"
-	Structure "servers/HTTPServer/Structure"
+	Auth "servers/Authentication"
+	Connection "servers/ConnectionPool"
+	Helper "servers/Helper"
+	Structure "servers/Structure"
 )
 
 var (
@@ -23,9 +24,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//Connecting to the tcp server
-	if pool == nil {
-		pool, _ = Connection.NewPool(Connection.MIN_NUM_CONNECTIONS, Connection.MAX_NUM_CONNECTIONS, Connection.ConnCreator)
-	}
+	pool, _ = Connection.InitialisePoolValue(pool)
 	c, err := Connection.ConnectToTCPServer(pool)
 	if err != nil {
 		http.Error(w, "Internal Server Error", 500)
@@ -33,11 +32,16 @@ func home(w http.ResponseWriter, r *http.Request) {
 	}
 	message := Helper.GetResponseFromTCPServer("Home page", c, pool)
 	//Sending information to the client
+	Helper.EnableCors(&w)
 	w.Write([]byte("Hello from Home page!!!\n" + message))
 }
 
 //Login handler function
 func loginUser(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
 	m := make(map[string]string)
 
 	if r.Method != http.MethodPost {
@@ -55,9 +59,8 @@ func loginUser(w http.ResponseWriter, r *http.Request) {
 	password := user.Password
 
 	command := "LOGIN username " + username + "|password " + password
-	if pool == nil {
-		pool, _ = Connection.NewPool(Connection.MIN_NUM_CONNECTIONS, Connection.MAX_NUM_CONNECTIONS, Connection.ConnCreator)
-	}
+	//Connecting to the tcp server
+	pool, _ = Connection.InitialisePoolValue(pool)
 	c, err := Connection.ConnectToTCPServer(pool)
 	if err != nil {
 		http.Error(w, "Internal Server Error", 500)
@@ -67,7 +70,11 @@ func loginUser(w http.ResponseWriter, r *http.Request) {
 	details, _ := Helper.ConvertStringToMap(message)
 	m["command"] = "LOGIN"
 	m["access_token"] = details["access_token"]
-	jsonString, _ := json.Marshal(m)
+	jsonString, err := json.Marshal(m)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	if details["access_token"] == "Invalid Credentials" {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusUnauthorized)
@@ -75,21 +82,25 @@ func loginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	Helper.EnableCors(&w)
 	w.Write([]byte(jsonString))
 }
 
 //Logout handler function
 func logoutUser(w http.ResponseWriter, r *http.Request) {
-	m := make(map[string]string)
-	if pool == nil {
-		pool, _ = Connection.NewPool(Connection.MIN_NUM_CONNECTIONS, Connection.MAX_NUM_CONNECTIONS, Connection.ConnCreator)
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
 	}
+	m := make(map[string]string)
+	//Connecting to the tcp server
+	pool, _ = Connection.InitialisePoolValue(pool)
 	c, err := Connection.ConnectToTCPServer(pool)
 	if err != nil {
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
-	tokenAuth, err := Helper.ExtractTokenMetadata(r)
+	tokenAuth, err := Auth.ExtractTokenMetadata(r)
 	if err != nil {
 		fmt.Println(err)
 		m["profile"] = "Unauthorised Access"
@@ -110,21 +121,25 @@ func logoutUser(w http.ResponseWriter, r *http.Request) {
 	m["status"] = message
 	jsonString, _ := json.Marshal(m)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	Helper.EnableCors(&w)
 	w.Write([]byte(jsonString))
 }
 
 //Show profile handler function
 func showProfile(w http.ResponseWriter, r *http.Request) {
-	m := make(map[string]string)
-	if pool == nil {
-		pool, _ = Connection.NewPool(Connection.MIN_NUM_CONNECTIONS, Connection.MAX_NUM_CONNECTIONS, Connection.ConnCreator)
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
 	}
+	m := make(map[string]string)
+	//Connecting to the tcp server
+	pool, _ = Connection.InitialisePoolValue(pool)
 	c, err := Connection.ConnectToTCPServer(pool)
 	if err != nil {
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
-	tokenAuth, err := Helper.ExtractTokenMetadata(r)
+	tokenAuth, err := Auth.ExtractTokenMetadata(r)
 	if err != nil {
 		fmt.Println(err)
 		m["profile"] = "Unauthorised Access"
@@ -144,21 +159,25 @@ func showProfile(w http.ResponseWriter, r *http.Request) {
 	details, _ := Helper.ConvertStringToMap(message)
 	jsonString, _ := json.Marshal(details)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	Helper.EnableCors(&w)
 	w.Write(jsonString)
 }
 
 //Modify profile handler function
 func updateProfile(w http.ResponseWriter, r *http.Request) {
-	m := make(map[string]string)
-	if pool == nil {
-		pool, _ = Connection.NewPool(Connection.MIN_NUM_CONNECTIONS, Connection.MAX_NUM_CONNECTIONS, Connection.ConnCreator)
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
 	}
+	m := make(map[string]string)
+	//Connecting to the tcp server
+	pool, _ = Connection.InitialisePoolValue(pool)
 	c, err := Connection.ConnectToTCPServer(pool)
 	if err != nil {
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
-	tokenAuth, err := Helper.ExtractTokenMetadata(r)
+	tokenAuth, err := Auth.ExtractTokenMetadata(r)
 	if err != nil {
 		fmt.Println(err)
 		m["profile"] = "Unauthorised Access"
@@ -189,21 +208,25 @@ func updateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	Helper.EnableCors(&w)
 	w.Write([]byte(jsonString))
 }
 
 //Change the user password
 func changePassword(w http.ResponseWriter, r *http.Request) {
-	m := make(map[string]string)
-	if pool == nil {
-		pool, _ = Connection.NewPool(Connection.MIN_NUM_CONNECTIONS, Connection.MAX_NUM_CONNECTIONS, Connection.ConnCreator)
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
 	}
+	m := make(map[string]string)
+	//Connecting to the tcp server
+	pool, _ = Connection.InitialisePoolValue(pool)
 	c, err := Connection.ConnectToTCPServer(pool)
 	if err != nil {
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
-	tokenAuth, err := Helper.ExtractTokenMetadata(r)
+	tokenAuth, err := Auth.ExtractTokenMetadata(r)
 	if err != nil {
 		fmt.Println(err)
 		m["profile"] = "Unauthorised Access"
@@ -233,21 +256,25 @@ func changePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	Helper.EnableCors(&w)
 	w.Write([]byte(jsonString))
 }
 
 //Show Profile picture
 func showPicture(w http.ResponseWriter, r *http.Request) {
-	m := make(map[string]string)
-	if pool == nil {
-		pool, _ = Connection.NewPool(Connection.MIN_NUM_CONNECTIONS, Connection.MAX_NUM_CONNECTIONS, Connection.ConnCreator)
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
 	}
+	m := make(map[string]string)
+	//Connecting to the tcp server
+	pool, _ = Connection.InitialisePoolValue(pool)
 	c, err := Connection.ConnectToTCPServer(pool)
 	if err != nil {
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
-	tokenAuth, err := Helper.ExtractTokenMetadata(r)
+	tokenAuth, err := Auth.ExtractTokenMetadata(r)
 	if err != nil {
 		fmt.Println(err)
 		m["profile"] = "Unauthorised Access"
@@ -277,21 +304,25 @@ func showPicture(w http.ResponseWriter, r *http.Request) {
 	m["status"] = "false"
 	jsonString, _ := json.Marshal(m)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	Helper.EnableCors(&w)
 	w.Write([]byte(jsonString))
 }
 
 //Upload profile picture
 func uploadPicture(w http.ResponseWriter, r *http.Request) {
-	m := make(map[string]string)
-	if pool == nil {
-		pool, _ = Connection.NewPool(Connection.MIN_NUM_CONNECTIONS, Connection.MAX_NUM_CONNECTIONS, Connection.ConnCreator)
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
 	}
+	m := make(map[string]string)
+	//Connecting to the tcp server
+	pool, _ = Connection.InitialisePoolValue(pool)
 	c, err := Connection.ConnectToTCPServer(pool)
 	if err != nil {
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
-	tokenAuth, err := Helper.ExtractTokenMetadata(r)
+	tokenAuth, err := Auth.ExtractTokenMetadata(r)
 	if err != nil {
 		fmt.Println(err)
 		m["profile"] = "Unauthorised Access"
@@ -322,5 +353,6 @@ func uploadPicture(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	Helper.EnableCors(&w)
 	w.Write([]byte(jsonString))
 }

@@ -1,31 +1,33 @@
-package helper
+package mysql
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	_ "github.com/go-sql-driver/mysql"
 
-	Structure "servers/TCPServer/Structure"
+	Structure "servers/Structure"
+	Constants "servers/internal"
 )
 
 func dbConn() (db *sql.DB) {
-	dbDriver := "mysql"
-	dbUser := "root"
-	dbPass := ""
-	dbName := "users"
+	dbDriver := Constants.DB_DRIVER
+	dbUser := Constants.DB_USER
+	dbPass := Constants.DB_PASS
+	dbName := Constants.DB_NAME
 	db, err := sql.Open(dbDriver, dbUser+":"+dbPass+"@/"+dbName)
 	if err != nil {
-		panic(err.Error())
+		fmt.Println(err)
 	}
 	return db
 }
 
 func Show(username string) Structure.Profile {
 	db := dbConn()
-	selDB, err := db.Query("SELECT * FROM Profile WHERE Nickname=?", username)
+	selDB, err := db.Query("SELECT * FROM Profile WHERE Nickname=? LIMIT 1", username)
 	if err != nil {
-		panic(err.Error())
+		fmt.Println(err)
 	}
 	profile := Structure.Profile{}
 	for selDB.Next() {
@@ -36,7 +38,7 @@ func Show(username string) Structure.Profile {
 		var picture sql.NullString
 		err = selDB.Scan(&id, &username, &nickname, &password, &picture)
 		if err != nil {
-			panic(err.Error())
+			fmt.Println(err)
 		}
 		profile.ID = id
 		profile.Username = username
@@ -53,9 +55,25 @@ func Show(username string) Structure.Profile {
 	return profile
 }
 
+func UpdateUserProfile(profile *Structure.Profile) (bool, error) {
+	name := profile.Username
+	nickname := profile.Nickname
+	password := profile.Password
+	imageRef := profile.ImageRef
+	db := dbConn()
+	insForm, err := db.Prepare("UPDATE Profile SET Name=?, Password=?, ImageRef=? WHERE Nickname=? LIMIT 1")
+	if err != nil {
+		return false, err
+	}
+	insForm.Exec(name, password, imageRef, nickname)
+	log.Println("UPDATED: Profile of user: " + nickname)
+	defer db.Close()
+	return true, nil
+}
+
 func UpdateProfile(username string, name string) (bool, error) {
 	db := dbConn()
-	insForm, err := db.Prepare("UPDATE Profile SET Name=? WHERE Nickname=?")
+	insForm, err := db.Prepare("UPDATE Profile SET Name=? WHERE Nickname=? LIMIT 1")
 	if err != nil {
 		return false, err
 	}
@@ -66,7 +84,7 @@ func UpdateProfile(username string, name string) (bool, error) {
 
 func UpdatePassword(password []byte, username string) (bool, error) {
 	db := dbConn()
-	insForm, err := db.Prepare("UPDATE Profile SET Password=? WHERE Nickname=?")
+	insForm, err := db.Prepare("UPDATE Profile SET Password=? WHERE Nickname=? LIMIT 1")
 	if err != nil {
 		return false, err
 	}
@@ -78,7 +96,7 @@ func UpdatePassword(password []byte, username string) (bool, error) {
 
 func UpdateImageRef(imageRef string, username string) (bool, error) {
 	db := dbConn()
-	insForm, err := db.Prepare("UPDATE Profile SET ImageRef=? WHERE Nickname=?")
+	insForm, err := db.Prepare("UPDATE Profile SET ImageRef=? WHERE Nickname=? LIMIT 1")
 	if err != nil {
 		return false, err
 	}

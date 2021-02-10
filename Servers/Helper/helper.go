@@ -3,20 +3,14 @@ package helper
 import (
 	"encoding/json"
 	"log"
-	"net"
+	"net/http"
 	"os"
 	"path/filepath"
 
 	"golang.org/x/crypto/bcrypt"
 
-	Structure "servers/TCPServer/Structure"
+	Structure "servers/Structure"
 )
-
-func SendToHTTPServer(conn net.Conn, response string) {
-	//Connecting to the HTTP Server to send the response
-	conn.Write([]byte(response))
-	conn.Close()
-}
 
 func ConvertStringToMap(message string) (map[string]string, error) {
 	details := make(map[string]string)
@@ -33,7 +27,7 @@ func HashPassword(password string) ([]byte, error) {
 	return bytes, err
 }
 
-func ConvertStructToMap(profile Structure.Profile) map[string]string {
+func ConvertStructToMap(profile *Structure.Profile) map[string]string {
 	m := make(map[string]string)
 	m["Username"] = profile.Username
 	m["Nickname"] = profile.Nickname
@@ -49,4 +43,10 @@ func Visit(files *[]string) filepath.WalkFunc {
 		*files = append(*files, path)
 		return nil
 	}
+}
+
+func EnableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Access-Control-Allow-Methods", "POST,GET,OPTIONS, PUT, DELETE")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 }
