@@ -1,13 +1,14 @@
 import React from 'react';
 import './login.css';
 import { withRouter } from "react-router-dom";
+import { FormText } from 'react-bootstrap';
 
 
 
 class LoginPage extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { username: undefined, password: undefined };
+        this.state = { username: undefined, password: undefined, invalid: false };
 
         this.handleChangeUsername = this.handleChangeUsername.bind(this);
         this.handleChangePassword = this.handleChangePassword.bind(this);
@@ -28,6 +29,7 @@ class LoginPage extends React.Component {
 
         // stop here if form is invalid
         if (!(username && password)) {
+            this.setState({ invalid: true })
             return;
         }
 
@@ -40,15 +42,21 @@ class LoginPage extends React.Component {
         fetch(url, requestOptions)
             .then(data => data.json())
             .then(text => {
-                localStorage.clear();
-                localStorage.setItem('token', text.access_token); this.props.history.push("/profile");
+                if (text.access_token == "Invalid Credentials") {
+                    this.setState({ invalid: true })
+                } else {
+                    localStorage.clear();
+                    localStorage.setItem('token', text.access_token); this.props.history.push("/profile");
+                }
             })
             .catch((error) => {
+                this.setState({ invalid: true })
                 console.error('Error:', error);
             });
     }
 
     render() {
+        const { invalid } = this.state;
         return (<>
             <div className="login-wrapper">
                 <h1>Login</h1>
@@ -65,6 +73,7 @@ class LoginPage extends React.Component {
                         <div>
                             <button type="submit">Submit</button>
                         </div>
+                        {invalid && (<div style={{ marginTop: '20px', fontSize: '10px' }}><i>The username and passwrd does not exist!</i></div>)}
                     </center>
                 </form>
             </div>
