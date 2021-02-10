@@ -25,7 +25,7 @@ func dbConn() (db *sql.DB) {
 
 func Show(username string) Structure.Profile {
 	db := dbConn()
-	selDB, err := db.Query("SELECT * FROM Profile WHERE Nickname=?", username)
+	selDB, err := db.Query("SELECT * FROM Profile WHERE Nickname=? LIMIT 1", username)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -61,7 +61,7 @@ func UpdateUserProfile(profile *Structure.Profile) (bool, error) {
 	password := profile.Password
 	imageRef := profile.ImageRef
 	db := dbConn()
-	insForm, err := db.Prepare("UPDATE Profile SET Name=?, Password=?, ImageRef=? WHERE Nickname=?")
+	insForm, err := db.Prepare("UPDATE Profile SET Name=?, Password=?, ImageRef=? WHERE Nickname=? LIMIT 1")
 	if err != nil {
 		return false, err
 	}
@@ -73,7 +73,7 @@ func UpdateUserProfile(profile *Structure.Profile) (bool, error) {
 
 func UpdateProfile(username string, name string) (bool, error) {
 	db := dbConn()
-	insForm, err := db.Prepare("UPDATE Profile SET Name=? WHERE Nickname=?")
+	insForm, err := db.Prepare("UPDATE Profile SET Name=? WHERE Nickname=? LIMIT 1")
 	if err != nil {
 		return false, err
 	}
@@ -84,7 +84,7 @@ func UpdateProfile(username string, name string) (bool, error) {
 
 func UpdatePassword(password []byte, username string) (bool, error) {
 	db := dbConn()
-	insForm, err := db.Prepare("UPDATE Profile SET Password=? WHERE Nickname=?")
+	insForm, err := db.Prepare("UPDATE Profile SET Password=? WHERE Nickname=? LIMIT 1")
 	if err != nil {
 		return false, err
 	}
@@ -96,7 +96,7 @@ func UpdatePassword(password []byte, username string) (bool, error) {
 
 func UpdateImageRef(imageRef string, username string) (bool, error) {
 	db := dbConn()
-	insForm, err := db.Prepare("UPDATE Profile SET ImageRef=? WHERE Nickname=?")
+	insForm, err := db.Prepare("UPDATE Profile SET ImageRef=? WHERE Nickname=? LIMIT 1")
 	if err != nil {
 		return false, err
 	}
