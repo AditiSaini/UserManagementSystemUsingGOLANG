@@ -57,8 +57,9 @@ func loginUser(w http.ResponseWriter, r *http.Request) {
 	}
 	username := user.Username
 	password := user.Password
+	encodedPassword := base64.StdEncoding.EncodeToString([]byte(password))
 
-	command := "LOGIN username " + username + "|password " + password
+	command := "LOGIN username " + username + "|password " + encodedPassword
 	//Connecting to the tcp server
 	pool, _ = Connection.InitialisePoolValue(pool)
 	c, err := Connection.ConnectToTCPServer(pool)

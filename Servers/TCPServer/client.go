@@ -254,8 +254,9 @@ func (c *client) showProfile(command *Structure.Command) {
 }
 
 func (c *client) login(command *Structure.Command) {
+	password, _ := base64.StdEncoding.DecodeString(command.Body["password"])
 	//Checking the validity of the credentials
-	profile, err := Auth.ValidateLogin(command.Body["username"], command.Body["password"])
+	profile, err := Auth.ValidateLogin(command.Body["username"], string(password))
 	//If user is authenticated, get a bearer token and return it to the HTTP Server
 	if err == nil {
 		//Token is created for auth
