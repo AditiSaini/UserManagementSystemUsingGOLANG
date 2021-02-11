@@ -7,7 +7,7 @@ import pickle
 size = 10000000
 
 password = '245'
-hashAndSalt = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode("utf-8") 
+hashAndSalt = bcrypt.hashpw(password.encode(), bcrypt.gensalt(4)).decode("utf-8") 
 
 def random_names(name_type, size):
     """
