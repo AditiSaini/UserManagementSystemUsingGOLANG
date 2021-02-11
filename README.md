@@ -24,9 +24,18 @@ The project consists of three major components:
     - `chmod +x createBinaries.bash`
 2. Run the following command to create an excutable files
     - `./createBinaries.bash`
-2. Run the below commands to start and stop the servers
+3. Run the below commands to start and stop the servers
     - `./startServers.bash`
     - `./stopServers.bash`
 
-
+## 3. Stress testing scripts
+1. Go the scripts/stressTest/wrkScripts folder
+2. Install wrk using brew 
+    - `brew install wrk`
+3. Run any of these commands below to test each endpoint while ensuring that the server is started
+    - `wrk -t12 -c400 -d60 --latency http://localhost:4000/` [Default endpoint]
+    - `wrk -t30 -c3200 -d60 -H "Content-Type: application/json" -s login.lua http://localhost:4000/login` [Login endpoint]
+    - `wrk -t30 -c3200 -d60 -H "Authorisation: Token xxAddTokenValuexx"  http://localhost:4000/profile` [Show Profile endpoint]
+    - `wrk -t30 -c3200 -d60 -H "Authorisation: Token xxAddTokenValuexx"  http://localhost:4000/profile/update` [Update Profile endpoint]
+    - `wrk -t30 -c3200 -d60 -H "Authorisation: Token xxAddTokenValuexx"  http://localhost:4000/logout` [Logout endpoint]
 
