@@ -11,11 +11,20 @@ The project consists of three major components:
     - `npm run build `
 
 ## 2. Creating DB records using the scripts
+0. Create a users db with Profile table
 1. Go the scripts/addEntryInDB folder 
+2. Create a virtual environment
+    - `python3 -m venv env`
+3. Activate the environment 
+    - `source env/bin/activate`
+4. Install requirements
+    - `pip install -r requirements.txt`
 2. Run the command to create a pickled file for data to be added into the db 
     - `python3 getData.py`
 3. To add data into the existing Profile table in the users db
     - `python3 addSQLData.py`
+4. Deactivate the environment
+    - `deactivate`
 
 ## 2. Startup instructions for the project using the script 
 1. Go to the scripts/ folder and make the bash scripts executable, 
@@ -32,7 +41,7 @@ The project consists of three major components:
 1. Go the scripts/stressTest/wrkScripts folder
 2. Install wrk using brew 
     - `brew install wrk`
-3. Run any of these commands below to test each endpoint while ensuring that the server is started
+3. Run any of these commands below to test each endpoint while ensuring that the server is started (Make sure login.lua script is updated with credentials from the db)
     - `wrk -t12 -c400 -d60 --latency http://localhost:4000/` [Default endpoint]
     - `wrk -t30 -c3200 -d60 -H "Content-Type: application/json" -s login.lua http://localhost:4000/login` [Login endpoint]
     - `wrk -t30 -c3200 -d60 -H "Authorisation: Token xxAddTokenValuexx"  http://localhost:4000/profile` [Show Profile endpoint]
