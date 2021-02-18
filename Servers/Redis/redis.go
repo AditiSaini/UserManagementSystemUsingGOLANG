@@ -2,7 +2,6 @@ package redis
 
 import (
 	"encoding/json"
-	"time"
 
 	"github.com/go-redis/redis"
 
@@ -26,10 +25,10 @@ func init() {
 
 //Updates user info in cache
 func UpdateUserProfile(profile *Structure.Profile, authD map[string]string) error {
-	at := time.Unix(time.Now().Add(time.Minute*30).Unix(), 0)
-	now := time.Now()
+	// at := time.Unix(time.Now().Add(time.Minute*30).Unix(), 0)
+	// now := time.Now()
 	serialized, _ := json.Marshal(profile)
-	errAccess := client.Set(authD["AccessUUID"], serialized, at.Sub(now)).Err()
+	errAccess := client.Set(authD["AccessUUID"], serialized, 0).Err()
 	if errAccess != nil {
 		return errAccess
 	}
@@ -38,12 +37,12 @@ func UpdateUserProfile(profile *Structure.Profile, authD map[string]string) erro
 
 //Adds the user's token into the redis key value pair
 func CreateAuth(profile *Structure.Profile, td *Structure.TokenDetails) error {
-	at := time.Unix(td.AtExpires, 0) //converting Unix to UTC(to Time object)
-	now := time.Now()
+	// at := time.Unix(td.AtExpires, 0) //converting Unix to UTC(to Time object)
+	// now := time.Now()
 	// context := client.Context()
 	// retain readability with json
 	serialized, _ := json.Marshal(profile)
-	errAccess := client.Set(td.AccessUuid, serialized, at.Sub(now)).Err()
+	errAccess := client.Set(td.AccessUuid, serialized, 0).Err()
 	if errAccess != nil {
 		return errAccess
 	}

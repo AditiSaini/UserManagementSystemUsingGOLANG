@@ -23,7 +23,7 @@ func ConvertStringToMap(message string) (map[string]string, error) {
 
 //Hashes the password sent by the user
 func HashPassword(password string) ([]byte, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 1)
 	return bytes, err
 }
 

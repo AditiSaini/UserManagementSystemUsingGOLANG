@@ -43,11 +43,11 @@ class UserBehaviour(FastHttpUser):
         self.client.post("/changePassword", headers= {'Content-Type': 'application/json', 'Authorization': "Bearer " + self.token}, 
         json = {"password": "245"})
 
-    @task 
-    def upload(self):
-        attach = open('picture.png', 'r')
-        self.client.post("/uploadProfilePicture", headers= {'Authorization': "Bearer " + self.token}, 
-        files = {"myFile": attach})
+    # @task 
+    # def upload(self):
+    #     attach = open('picture.png', 'r')
+    #     self.client.post("/uploadProfilePicture", headers= {'Authorization': "Bearer " + self.token}, 
+    #     files = {"myFile": attach})
 
     def on_stop(self):
         self.client.get("/logout", headers= {'Authorization': "Bearer " + self.token})

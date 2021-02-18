@@ -20,6 +20,8 @@ func dbConn() (db *sql.DB) {
 	if err != nil {
 		fmt.Println(err)
 	}
+	db.SetMaxOpenConns(5000)
+	// db.SetConnMaxLifetime(120)
 	return db
 }
 
