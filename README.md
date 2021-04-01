@@ -1,4 +1,4 @@
-# aditi-entry
+# User Management System GOLANG Instructions
 The project consists of three major components:
 1. Client Web application- React
 2. Server code (TCP and HTTP)- Golang
