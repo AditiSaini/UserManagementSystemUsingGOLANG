@@ -1,6 +1,6 @@
 # User Management System GOLANG Instructions
 
-For more information about the project, refer to [this](https://docs.google.com/presentation/d/1pCpeg6_zqLWpDJpDjwKsbsbT9vuHDb3ComSYkEZw-uw/edit?usp=sharing) presentation
+For more information about the project, refer to [this](https://drive.google.com/file/d/16CZP97fZg9XOsmvzRCllGE5bfYZTkJeu/view?usp=sharing) presentation
 
 The project consists of three major components:
 1. Client Web application- React
